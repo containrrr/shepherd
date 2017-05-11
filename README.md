@@ -5,6 +5,7 @@ A Docker swarm service for automatically updating your services whenever their b
 ## Usage
 
     docker service create --name shepherd \
+                          --mode global \
                           --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
                           mazzolino/shepherd
 
