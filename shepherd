@@ -1,0 +1,24 @@
+#!/bin/ash
+# shellcheck shell=dash
+set -euo pipefail
+
+update_services() {
+  for service in $(IFS="\n" docker service ls --quiet); do
+    local name image
+    name="$(docker service inspect "$service" -f '{{.Spec.Name}}')"
+    image_with_digest="$(docker service inspect "$service" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
+    image=$(echo "$image_with_digest" | cut -d@ -f1)
+
+    echo "Updating service $name with image $image"
+    docker service update "$service" --image "$image" > /dev/null
+  done
+}
+
+main() {
+  while true; do
+    update_services
+    sleep 5m
+  done
+}
+
+main "$@"
