@@ -4,7 +4,7 @@ set -euo pipefail
 
 update_services() {
   for service in $(IFS="\n" docker service ls --quiet); do
-    local name image
+    local name image_with_digest image
     name="$(docker service inspect "$service" -f '{{.Spec.Name}}')"
     image_with_digest="$(docker service inspect "$service" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
     image=$(echo "$image_with_digest" | cut -d@ -f1)
