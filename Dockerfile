@@ -1,5 +1,6 @@
 FROM docker:latest
 LABEL maintainer "djimaze"
-COPY shepherd /usr/local/bin/shepherd
+ENV sleep_time='5m'
 
-ENTRYPOINT ["/usr/local/bin/shepherd"]
+COPY shepherd /usr/local/bin/shepherd
+ENTRYPOINT ["/usr/local/bin/shepherd","$sleep_time"]
