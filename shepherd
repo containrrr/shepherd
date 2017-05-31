@@ -17,8 +17,8 @@ update_services() {
 main() {
   while true; do
     update_services
-    echo "sleeping ${sleep_time} before new update"
-    sleep "${sleep_time}"
+    echo "sleeping ${SLEEPTIME} before new update"
+    sleep "${SLEEPTIME}"
   done
 }
 
