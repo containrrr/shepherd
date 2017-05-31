@@ -2,22 +2,33 @@
 # shellcheck shell=dash
 set -euo pipefail
 
+#sleep_time="$1"
+
 update_services() {
   for service in $(IFS="\n" docker service ls --quiet); do
-    local name image_with_digest image
+    local name image_with_digest image present
+    present=0
     name="$(docker service inspect "$service" -f '{{.Spec.Name}}')"
-    image_with_digest="$(docker service inspect "$service" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
-    image=$(echo "$image_with_digest" | cut -d@ -f1)
-
-    echo "Updating service $name with image $image"
-    docker service update "$service" --image "$image" > /dev/null
+    for blacklisted in $(IFS="\n" cat /tmp/blacklist); do
+      if [ "$blacklisted" == "$name" ]; then
+       present=1
+      fi
+    done
+    if [ "$present" -eq "0" ]; then
+     image_with_digest="$(docker service inspect "$service" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
+     image=$(echo "$image_with_digest" | cut -d@ -f1)
+     echo "Updating service $name with image $image"
+     docker service update --detach="false" "$service" --image="$image" > /dev/null
+    else
+     echo "service ${name} is blacklisted .... skipping"
+   fi
   done
 }
 
 main() {
   while true; do
     update_services
-    echo "sleeping ${SLEEPTIME} before new update"
+    echo "sleeping ${SLEEPTIME} before new update."
     sleep "${SLEEPTIME}"
   done
 }
