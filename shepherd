@@ -9,11 +9,13 @@ update_services() {
     local name image_with_digest image present
     present=0
     name="$(docker service inspect "$service" -f '{{.Spec.Name}}')"
-    for blacklisted in $(IFS="\n" cat /tmp/blacklist); do
+    if [ -f /tmp/blacklist ]; then
+     for blacklisted in $(IFS="\n" cat /tmp/blacklist); do
       if [ "$blacklisted" == "$name" ]; then
        present=1
       fi
-    done
+     done
+    fi 
     if [ "$present" -eq "0" ]; then
      image_with_digest="$(docker service inspect "$service" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
      image=$(echo "$image_with_digest" | cut -d@ -f1)
