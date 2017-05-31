@@ -8,16 +8,16 @@ update_services() {
     name="$(docker service inspect "$service" -f '{{.Spec.Name}}')"
     image_with_digest="$(docker service inspect "$service" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
     image=$(echo "$image_with_digest" | cut -d@ -f1)
-
     echo "Updating service $name with image $image"
-    docker service update "$service" --image "$image" > /dev/null
+    docker service update "$service" --image="$image" > /dev/null
   done
 }
 
 main() {
   while true; do
     update_services
-    sleep 5m
+    echo "Sleeping ${SLEEP_TIME} before next update"
+    sleep "${SLEEP_TIME}"
   done
 }
 

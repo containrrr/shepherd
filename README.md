@@ -7,10 +7,11 @@ A Docker swarm service for automatically updating your services whenever their b
     docker service create --name shepherd \
                           --replicas 1 \
                           --constraint "node.role==manager" \
+                          --env SLEEP_TIME="5m" \
                           --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
                           mazzolino/shepherd
 
-Shepherd will try to update your services every 5 minutes.
+Shepherd will try to update your services every 5 minutes by default. You can adjust this value using the `SLEEP_TIME` variable.
 
 ## How does it work?
 
