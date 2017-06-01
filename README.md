@@ -7,10 +7,13 @@ A Docker swarm service for automatically updating your services whenever their b
     docker service create --name shepherd \
                           --replicas 1 \
                           --constraint "node.role==manager" \
+                          --env SLEEPTIME='5m" \
+                          --mount type=bind,source=/path_to_blacklist_file,target=/tmp,ro \
                           --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
                           mazzolino/shepherd
 
-Shepherd will try to update your services every 5 minutes.
+Shepherd will try to update your services every 5 minutes but you can change this value by chengin the value of the SLEEPTIME variable.
+if you want to blacklist a service or more than one add the name of the services (one per line ) in a file called blacklist and mount it  as describe in the Usage example
 
 ## How does it work?
 
