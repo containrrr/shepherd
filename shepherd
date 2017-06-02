@@ -1,20 +1,22 @@
 #!/bin/ash
 ## shellcheck shell=dash
 #services.lst contains one service name per line with at start b: if blacklisted
-#and w: if whitelisted 
+#and w: if whitelisted
 #example:
 #b:shepherd
 
 #pipefail will prevent from providing the list of unmanaged services
 #set -euo pipefail
 
+service_file='/tmp/services.lst'
+
 update_services() {
   for service in $(IFS="\n" docker service ls --quiet); do
     local name image_with_digest image
     name="$(docker service inspect "$service" -f '{{.Spec.Name}}')"
-    if [ -f "/tmp/services.lst" ]; then
-     status=$(cat "/tmp/services.lst" | grep $name | cut -d':' -f1 )
-     service_name=$(cat "/tmp/services.lst" | grep $name | cut -d':' -f2 )
+    if [ -f "${service_file}" ]; then
+     status=$(cat "${service_file}" | grep $name | cut -d':' -f1 )
+     service_name=$(cat "${service_file}" | grep $name | cut -d':' -f2 )
       if [ "$service_name" == "$name" ]; then
          case $status in
          b)
@@ -51,5 +53,3 @@ main() {
   sleep "${SLEEP_TIME}"
  done
 }
-
-main "$@"
