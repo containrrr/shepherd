@@ -7,18 +7,17 @@ A Docker swarm service for automatically updating your services whenever their b
     docker service create --name shepherd \
                           --replicas 1 \
                           --constraint "node.role==manager" \
-                          --env SLEEP_TIME='5m" \
+                          --env SLEEP_TIME='5m' \
                           --mount type=bind,source=/path_to_services.lst,target=/tmp,ro \
                           --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
                           mazzolino/shepherd
 
-Shepherd will try to update your services every 5 minutes but you can change this value by chengin the value of the SLEEP_TIME variable.
+Shepherd will try to update your services every 5 minutes but you can change this value by chengin the value of the `SLEEP_TIME` variable.
 You need to create a file called services.lst which contain the list of services you have and which ones can be updated using shepherd and which one can't 
 
 To update a service called shepherd, you will add w:shepherd in services.lst
 to prevent update of a service called registry you will add b:registry in services.lst
 a service not declared it services.lst will be considered as blacklisted (b:) and won't be upograded
-
 
 ## How does it work?
 

@@ -11,7 +11,6 @@
 update_services() {
   for service in $(IFS="\n" docker service ls --quiet); do
     local name image_with_digest image
-
     name="$(docker service inspect "$service" -f '{{.Spec.Name}}')"
     if [ -f "/tmp/services.lst" ]; then
      status=$(cat "/tmp/services.lst" | grep $name | cut -d':' -f1 )
@@ -42,7 +41,7 @@ update_services() {
        echo "Missing services.lst file ........... exiting"
        exit 1
     fi
-  done
+   done
 }
 
 main() {
