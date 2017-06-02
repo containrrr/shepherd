@@ -8,7 +8,7 @@ A Docker swarm service for automatically updating your services whenever their b
                           --replicas 1 \
                           --constraint "node.role==manager" \
                           --env SLEEP_TIME='5m' \
-                          --env SERVICE_LIST='services.lst"
+                          --env SERVICE_LIST='services.lst'
                           --mount type=bind,source=/path_to_service_list,target=/tmp,ro \
                           --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
                           mazzolino/shepherd
