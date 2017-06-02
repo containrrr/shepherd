@@ -12,9 +12,9 @@ update_services() {
   for service in $(IFS="\n" docker service ls --quiet); do
     local name image_with_digest image
     name="$(docker service inspect "$service" -f '{{.Spec.Name}}')"
-    if [ -f "${SERVICE_LIST}" ]; then
-     status=$(cat "${SERVICE_LIST}" | grep $name | cut -d':' -f1 )
-     service_name=$(cat "${SERVICE_LIST}" | grep $name | cut -d':' -f2 )
+    if [ -f "/tmp/${SERVICE_LIST}" ]; then
+     status=$(cat "/tmp/${SERVICE_LIST}" | grep $name | cut -d':' -f1 )
+     service_name=$(cat "/tmp/${SERVICE_LIST}" | grep $name | cut -d':' -f2 )
       if [ "$service_name" == "$name" ]; then
          case $status in
          b)
