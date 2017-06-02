@@ -12,7 +12,7 @@ A Docker swarm service for automatically updating your services whenever their b
                           --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
                           mazzolino/shepherd
 
-Shepherd will try to update your services every 5 minutes but you can change this value by chengin the value of the SLEEPTIME variable.
+Shepherd will try to update your services every 5 minutes but you can change this value by chengin the value of the SLEEP_TIME variable.
 You need to create a file called services.lst which contain the list of services you have and which ones can be updated using shepherd and which one can't 
 
 To update a service called shepherd, you will add w:shepherd in services.lst
