@@ -1,8 +1,15 @@
 #!/bin/bash
 set -euo pipefail
 
+server_version() {
+  docker version -f "{{.Server.Version}}"
+}
+
 update_services() {
   local blacklist="$1"
+  local supports_detach_option=$2
+  local detach_option=""
+  [ $supports_detach_option = true ] && detach_option="--detach=false"
 
   for service in $(IFS="\n" docker service ls --quiet); do
     local name image_with_digest image
@@ -11,19 +18,26 @@ update_services() {
       image_with_digest="$(docker service inspect "$service" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
       image=$(echo "$image_with_digest" | cut -d@ -f1)
       echo "Updating service $name with image $image"
-      docker service update "$service" --detach=false --image="$image" > /dev/null
+      docker service update "$service" $detach_option --image="$image" > /dev/null
     fi
   done
 }
 
 main() {
-  local blacklist="${BLACKLIST_SERVICES:-}"
+  local blacklist supports_detach_option=false
+  blacklist="${BLACKLIST_SERVICES:-}"
+
+  if [[ "$(server_version)" > "17.05" ]]; then
+    supports_detach_option=true
+    echo "Enabling synchronous service updates"
+  fi
+
   [[ "$blacklist" != "" ]] && echo "Excluding services: $blacklist"
 
   while true; do
-    update_services "${blacklist}"
-    echo "Sleeping ${SLEEP_TIME} before next update"
-    sleep "${SLEEP_TIME}"
+    update_services "$blacklist" "$supports_detach_option"
+    echo "Sleeping $SLEEP_TIME before next update"
+    sleep "$SLEEP_TIME"
   done
 }
 
