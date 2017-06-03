@@ -24,20 +24,24 @@ update_services() {
 }
 
 main() {
-  local blacklist supports_detach_option=false
+  local blacklist sleep_time supports_detach_option
   blacklist="${BLACKLIST_SERVICES:-}"
+  sleep_time="${SLEEP_TIME:-5m}"
 
+  supports_detach_option=false
   if [[ "$(server_version)" > "17.05" ]]; then
     supports_detach_option=true
     echo "Enabling synchronous service updates"
+  else
+    supports_detach_option=false
   fi
 
   [[ "$blacklist" != "" ]] && echo "Excluding services: $blacklist"
 
   while true; do
     update_services "$blacklist" "$supports_detach_option"
-    echo "Sleeping $SLEEP_TIME before next update"
-    sleep "$SLEEP_TIME"
+    echo "Sleeping $sleep_time before next update"
+    sleep "$sleep_time"
   done
 }
 
