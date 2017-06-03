@@ -11,7 +11,7 @@ update_services() {
       image_with_digest="$(docker service inspect "$service" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
       image=$(echo "$image_with_digest" | cut -d@ -f1)
       echo "Updating service $name with image $image"
-      docker service update "$service" --image="$image" > /dev/null
+      docker service update "$service" --detach=false --image="$image" > /dev/null
     fi
   done
 }
