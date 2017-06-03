@@ -2,19 +2,26 @@
 set -euo pipefail
 
 update_services() {
+  local blacklist="$1"
+
   for service in $(IFS="\n" docker service ls --quiet); do
     local name image_with_digest image
     name="$(docker service inspect "$service" -f '{{.Spec.Name}}')"
-    image_with_digest="$(docker service inspect "$service" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
-    image=$(echo "$image_with_digest" | cut -d@ -f1)
-    echo "Updating service $name with image $image"
-    docker service update "$service" --image="$image" > /dev/null
+    if [[ " $blacklist " != *" $name "* ]]; then
+      image_with_digest="$(docker service inspect "$service" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
+      image=$(echo "$image_with_digest" | cut -d@ -f1)
+      echo "Updating service $name with image $image"
+      docker service update "$service" --image="$image" > /dev/null
+    fi
   done
 }
 
 main() {
+  local blacklist="${BLACKLIST_SERVICES:-}"
+  [[ "$blacklist" != "" ]] && echo "Excluding services: $blacklist"
+
   while true; do
-    update_services
+    update_services "${blacklist}"
     echo "Sleeping ${SLEEP_TIME} before next update"
     sleep "${SLEEP_TIME}"
   done
