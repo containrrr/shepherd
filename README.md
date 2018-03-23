@@ -24,8 +24,9 @@ Example:
                         --constraint "node.role==manager" \
                         --env SLEEP_TIME="5m" \
                         --env BLACKLIST_SERVICES="shepherd my-other-service" \
-                        --env WITH_REGISTRY_AUTH \
+                        --env WITH_REGISTRY_AUTH="true" \
                         --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
+                        --mount type=bind,source=/root/.docker/config.json,target=/root/.docker/config.json,ro \
                         mazzolino/shepherd
 
 ## How does it work?
