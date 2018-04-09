@@ -51,8 +51,6 @@ main() {
     echo "Sleeping $sleep_time before next update"
     sleep "$sleep_time"
   done
-
-  
 }
 
 main "$@"
