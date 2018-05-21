@@ -5,30 +5,101 @@ server_version() {
   docker version -f "{{.Server.Version}}"
 }
 
+# Runs `docker service inspect` with output formatting.
+# @param {string} service The service name
+# @param {string} format The format string
+service_inspect() {
+  local service="$1"
+  local format="$2"
+
+  docker service inspect "$service" -f "$format"
+}
+
 update_services() {
   local blacklist="$1"
   local supports_detach_option=$2
   local supports_registry_auth=$3
+  local manual_mode_for_all=$4
   local detach_option=""
   local registry_auth=""
+  local label_manual_mode="com.shepherd.manual_mode"
 
   [ $supports_detach_option = true ] && detach_option="--detach=false"
   [ $supports_registry_auth = true ] && registry_auth="--with-registry-auth"
 
   for service in $(IFS="\n" docker service ls --quiet); do
-    local name image_with_digest image
-    name="$(docker service inspect "$service" -f '{{.Spec.Name}}')"
+    local name service_image_with_digest service_image service_image_digest service_has_manual_mode
+    service_has_manual_mode=false
+
+    name="$(service_inspect "$service" '{{.Spec.Name}}')"
     if [[ " $blacklist " != *" $name "* ]]; then
-      image_with_digest="$(docker service inspect "$service" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
-      image=$(echo "$image_with_digest" | cut -d@ -f1)
-      echo "Updating service $name with image $image"
-      docker service update "$service" $detach_option $registry_auth --image="$image" > /dev/null
+      # Format: [organization]/[repository]:[tag]@sha256:[checksum]
+      service_image_with_digest=$(service_inspect "$service" '{{.Spec.TaskTemplate.ContainerSpec.Image}}')
+      # Format: [organization]/[repository]:[tag]
+      service_image=$(echo "$service_image_with_digest" | cut -d@ -f1)
+      # Format: sha256:[checksum]
+      service_image_digest=$(echo "$service_image_with_digest" | cut -d@ -f2)
+
+      # Is "manual mode" enabled for all services via environment variable?
+      if [[ "$manual_mode_for_all" == true ]]; then service_has_manual_mode=true; fi
+      # ... otherwise, is "manual mode" enabled for this service via service label?
+      if [[ "$service_has_manual_mode" == false ]]; then
+        service_has_manual_mode=$(service_inspect "$service" '{{index .Spec.TaskTemplate.ContainerSpec.Labels "'"$label_manual_mode"'"}}')
+      fi
+
+      if [[ "$service_has_manual_mode" == true ]]; then
+        # We do not rely on Docker's image resolution and pulling logic to turn:
+        # `[organization]/[repository]:[tag]`
+        # ... into the latest: `[organization]/[repository]:[tag]@sha256:[checksum]`
+        # ... to then pull that image and update the service `$service` with it.
+        local local_image_with_digest local_image_digest
+
+        # This command is straightforward, it pulls the latest tagged image locally
+        # It also works with private repository images, if the correct volumes are
+        # mounted and `docker login` was executed on the host.
+        docker pull "$service_image" > /dev/null
+
+        # Format: [organization]/[repository]@sha256:[checksum]
+        local_image_with_digest=$(docker image inspect "$service_image" -f '{{index .RepoDigests 0}}')
+        # Format: sha256:[checksum]
+        local_image_digest=$(echo "$local_image_with_digest" | cut -d@ -f2)
+
+        # Check if the service's image has become outdated after `docker pull`,
+        # by comparing its digest with the digest of the local image.
+        if [[ "$service_image_digest" != "$local_image_digest" ]]; then
+          # We need to update the service and make it load the latest image, the
+          # one we pulled locally a few lines above.
+          local service_new_image_with_digest
+
+          # Format: [organization]/[repository]:[tag]@sha256:[checksum]
+          service_new_image_with_digest="${service_image}@${local_image_digest}"
+
+          echo "Updating service $name with image $service_image"
+          echo "Image with digest: $service_new_image_with_digest"
+
+          # 1) We exclude `$registry_auth` because the image has been pulled locally.
+          # 2) We specify the exact image name/tag/digest, to force Docker to select it.
+          # 3) We "force" the update since we know the service must be updated.
+          # 4) If the udpate is successful, the following command returns $service_new_image_with_digest:
+          #   `docker service inspect [service] -f "{{.Spec.TaskTemplate.ContainerSpec.Image}}"`
+          # 5) If the update is successful and you are not affected by a bug or a
+          # configuration issue, all the container tasks belonging to the service
+          # should return $service_new_image_with_digest when executing:
+          #   `docker inspect "[container_of_service]" -f {{.Config.Image}}`
+          docker service update "$service" $detach_option --image="$service_new_image_with_digest" --force > /dev/null
+        fi
+      else
+        # Default behavior: we let `docker service update --image` use Docker's
+        # built-in image resolution and pulling logic.
+        echo "Updating service $name with image $service_image"
+        docker service update "$service" $detach_option $registry_auth --image="$service_image" > /dev/null
+      fi
     fi
   done
 }
 
 main() {
-  local blacklist sleep_time supports_detach_option supports_registry_auth
+  local blacklist sleep_time supports_detach_option supports_registry_auth manual_mode_for_all
   blacklist="${BLACKLIST_SERVICES:-}"
   sleep_time="${SLEEP_TIME:-5m}"
 
@@ -44,10 +115,23 @@ main() {
     echo "Send registry authentication details to swarm agents"
   fi
 
+  manual_mode_for_all=false
+  # Check if the variable is defined first.
+  if [[ ${MANUAL_MODE+x} ]]; then
+    if [[ "$MANUAL_MODE" == "all" ]]; then
+        manual_mode_for_all=true
+        echo "Enabling manual mode for all services"
+      else
+        # Warn an user who may have written something like "true".
+        echo "Error: the value of variable 'MANUAL_MODE' is unrecognized"
+        exit 1
+    fi
+  fi
+
   [[ "$blacklist" != "" ]] && echo "Excluding services: $blacklist"
 
   while true; do
-    update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth"
+    update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth" "$manual_mode_for_all"
     echo "Sleeping $sleep_time before next update"
     sleep "$sleep_time"
   done
