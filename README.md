@@ -14,7 +14,7 @@ A Docker swarm service for automatically updating your services whenever their b
 
 Shepherd will try to update your services every 5 minutes by default. You can adjust this value using the `SLEEP_TIME` variable.
 
-You can prevent services from being updated bei appending them to the `BLACKLIST_SERVICES` variable. This should be a space-separated list of service names.
+You can prevent services from being updated by appending them to the `BLACKLIST_SERVICES` variable. This should be a space-separated list of service names.
 
 You can enable private registry authentication by setting the `WITH_REGISTRY_AUTH` variable.
 
