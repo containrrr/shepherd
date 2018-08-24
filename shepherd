@@ -2,7 +2,7 @@
 set -euo pipefail
 
 log() {
-    echo "[$(date)] $1"
+  echo "[$(date)] $1"
 }
 
 server_version() {
