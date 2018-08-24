@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+log() {
+    echo "[$(date)] $1"
+}
+
 server_version() {
   docker version -f "{{.Server.Version}}"
 }
@@ -21,7 +25,7 @@ update_services() {
     if [[ " $blacklist " != *" $name "* ]]; then
       image_with_digest="$(docker service inspect "$service" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
       image=$(echo "$image_with_digest" | cut -d@ -f1)
-      echo "Updating service $name with image $image"
+      log "Updating service $name with image $image"
       docker service update "$service" $detach_option $registry_auth --image="$image" > /dev/null
     fi
   done
@@ -35,20 +39,20 @@ main() {
   supports_detach_option=false
   if [[ "$(server_version)" > "17.05" ]]; then
     supports_detach_option=true
-    echo "Enabling synchronous service updates"
+    log "Enabling synchronous service updates"
   fi
 
   supports_registry_auth=false
   if [[ ${WITH_REGISTRY_AUTH+x} ]]; then
     supports_registry_auth=true
-    echo "Send registry authentication details to swarm agents"
+    log "Send registry authentication details to swarm agents"
   fi
 
   [[ "$blacklist" != "" ]] && echo "Excluding services: $blacklist"
 
   while true; do
     update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth"
-    echo "Sleeping $sleep_time before next update"
+    log "Sleeping $sleep_time before next update"
     sleep "$sleep_time"
   done
 }
