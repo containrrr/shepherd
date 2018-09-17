@@ -1,4 +1,11 @@
 #!/bin/bash
+
+# minute hour day-of-month month day-of-week
+#      m  h dom mon dow
+sched="41 18 * * 3"
+
+read m_when h_when dom_when mon_when dow_when <<< $sched
+
 set -euo pipefail
 
 server_version() {
@@ -46,10 +53,52 @@ main() {
 
   [[ "$blacklist" != "" ]] && echo "Excluding services: $blacklist"
 
+  delay=0
+  gone=0
   while true; do
     update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth"
-    echo "Sleeping $sleep_time before next update"
-    sleep "$sleep_time"
+    m_now=$(date +%M)
+    h_now=$(date +%H)
+    dom_now=$(date +%d)
+    mon_now=$(date +%m)
+    dow_now=$(date +%u)
+    go=0
+    if [ "$m_when" = "*" -o "$m_when" = "$m_now" ]; then
+      go=$[$go+1]
+    fi
+    if [ "$h_when" = "*" -o "$h_when" = "$h_now" ]; then
+      go=$[$go+1]
+    fi
+    if [ "$dom_when" = "*" -o "$dom_when" = "$dom_now" ]; then
+      go=$[$go+1]
+    fi
+    if [ "$mon_when" = "*" -o "$mon_when" = "$mon_now" ]; then
+      go=$[$go+1]
+    fi
+    if [ "$dow_when" = "*" -o "$dow_when" = "$dow_now" ]; then
+      go=$[$go+1]
+    fi
+    if [ $go -eq 5 ]; then
+      if [ $delay -eq 0 ]; then
+        replay=$[$(date +%s)+61]
+        # uncomment lines below for debugging
+        # echo "you asked $sched"
+        # echo "$(date) it's time to fire"
+        delay=1
+      fi
+      if [ $(date +%s) -gt $replay ]; then
+        delay=0
+      fi
+    # uncomment lines below for debugging
+    # else
+    #   echo "nothing to do"
+    #   echo "cron positions: m h dom mon dow"
+    #   echo "when to fireup: $m_when $h_when $dom_when $mon_when $dow_when"
+    #   echo "current cron  : $m_now $h_now $dom_now $mon_now $dow_now"
+    fi
+    sleep 5
+    # echo "Sleeping $sleep_time before next update"
+    # sleep "$sleep_time"
   done
 }
 
