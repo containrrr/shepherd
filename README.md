@@ -9,6 +9,19 @@ A Docker swarm service for automatically updating your services whenever their b
                           --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
                           mazzolino/shepherd
 
+## Or with docker-compose
+    services:
+      ...
+      shepherd:
+        build: .
+        image: mazzolino/shepherd
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+        deploy:
+          placement:
+            constraints:
+            - node.role == manager
+
 ### Configuration
 
 Shepherd will try to update your services every 5 minutes by default. You can adjust this value using the `SLEEP_TIME` variable.
