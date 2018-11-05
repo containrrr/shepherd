@@ -10,6 +10,7 @@ A Docker swarm service for automatically updating your services whenever their b
                           mazzolino/shepherd
 
 ## Or with docker-compose
+    version: "3"
     services:
       ...
       shepherd:
