@@ -5,10 +5,23 @@ A Docker swarm service for automatically updating your services whenever their b
 ## Usage
 
     docker service create --name shepherd \
-                          --replicas 1 \
                           --constraint "node.role==manager" \
                           --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
                           mazzolino/shepherd
+
+## Or with docker-compose
+    version: "3"
+    services:
+      ...
+      shepherd:
+        build: .
+        image: mazzolino/shepherd
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+        deploy:
+          placement:
+            constraints:
+            - node.role == manager
 
 ### Configuration
 
