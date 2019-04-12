@@ -29,6 +29,8 @@ Shepherd will try to update your services every 5 minutes by default. You can ad
 
 You can prevent services from being updated by appending them to the `BLACKLIST_SERVICES` variable. This should be a space-separated list of service names.
 
+Alternatively you can specify a filter for the services you want updated using the `FILTER_SERVICES` variable. This can be anything accepted by the filtering flag in `docker service ls`.
+
 You can enable private registry authentication by setting the `WITH_REGISTRY_AUTH` variable.
 
 Example:
@@ -38,6 +40,7 @@ Example:
                         --env SLEEP_TIME="5m" \
                         --env BLACKLIST_SERVICES="shepherd my-other-service" \
                         --env WITH_REGISTRY_AUTH="true" \
+                        --env FILTER_SERVICES="label=com.mydomain.autodeploy"
                         --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
                         --mount type=bind,source=/root/.docker/config.json,target=/root/.docker/config.json,ro \
                         mazzolino/shepherd

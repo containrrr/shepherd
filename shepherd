@@ -15,7 +15,7 @@ update_services() {
   [ $supports_detach_option = true ] && detach_option="--detach=false"
   [ $supports_registry_auth = true ] && registry_auth="--with-registry-auth"
 
-  for service in $(IFS="\n" docker service ls --quiet); do
+  for service in $(IFS="\n" docker service ls --quiet --filter "${FILTER_SERVICES}"); do
     local name image_with_digest image
     name="$(docker service inspect "$service" -f '{{.Spec.Name}}')"
     if [[ " $blacklist " != *" $name "* ]]; then
