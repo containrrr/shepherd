@@ -21,13 +21,13 @@ update_services() {
     if [[ " $blacklist " != *" $name "* ]]; then
       image_with_digest="$(docker service inspect "$service" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
       image=$(echo "$image_with_digest" | cut -d@ -f1)
-      echo "Trying to update service $name with image $image"
+      [ "$NO_VERBOSE" = "true" ] || echo "Trying to update service $name with image $image"
       docker service update "$service" $detach_option $registry_auth --image="$image" > /dev/null
 
       previousImage=$(docker service inspect "$service" -f '{{.PreviousSpec.TaskTemplate.ContainerSpec.Image}}')
       currentImage=$(docker service inspect "$service" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')
       if [ "$previousImage" == "$currentImage" ]; then
-        echo "No updates to service $name!"
+        [ "$NO_VERBOSE" = "true" ] || echo "No updates to service $name!"
       else
         echo "Service $name was updated!"
       fi
