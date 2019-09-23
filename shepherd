@@ -11,21 +11,21 @@ update_services() {
   local supports_registry_auth=$3
   local detach_option=""
   local registry_auth=""
+  local name
 
   [ $supports_detach_option = true ] && detach_option="--detach=false"
   [ $supports_registry_auth = true ] && registry_auth="--with-registry-auth"
 
-  for service in $(IFS="\n" docker service ls --quiet --filter "${FILTER_SERVICES}"); do
-    local name image_with_digest image
-    name="$(docker service inspect "$service" -f '{{.Spec.Name}}')"
+  for name in $(IFS=$'\n' docker service ls --quiet --filter "${FILTER_SERVICES}" --format '{{.Name}}'); do
+    local image_with_digest image
     if [[ " $blacklist " != *" $name "* ]]; then
-      image_with_digest="$(docker service inspect "$service" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
+      image_with_digest="$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
       image=$(echo "$image_with_digest" | cut -d@ -f1)
       echo "Trying to update service $name with image $image"
-      docker service update "$service" $detach_option $registry_auth --image="$image" > /dev/null
+      docker service update "$name" $detach_option $registry_auth --image="$image" > /dev/null
 
-      previousImage=$(docker service inspect "$service" -f '{{.PreviousSpec.TaskTemplate.ContainerSpec.Image}}')
-      currentImage=$(docker service inspect "$service" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')
+      previousImage=$(docker service inspect "$name" -f '{{.PreviousSpec.TaskTemplate.ContainerSpec.Image}}')
+      currentImage=$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')
       if [ "$previousImage" == "$currentImage" ]; then
         echo "No updates to service $name!"
       else
