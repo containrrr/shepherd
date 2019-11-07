@@ -30,6 +30,8 @@ A Docker swarm service for automatically updating your services whenever their b
 
 Shepherd will try to update your services every 5 minutes by default. You can adjust this value using the `SLEEP_TIME` variable.
 
+Shepherd can connect to a specific docker host by setting the `HOST` variable. This defaults to `unix:///var/run/docker.sock`
+
 You can prevent services from being updated by appending them to the `BLACKLIST_SERVICES` variable. This should be a space-separated list of service names.
 
 Alternatively you can specify a filter for the services you want updated using the `FILTER_SERVICES` variable. This can be anything accepted by the filtering flag in `docker service ls`.
@@ -41,6 +43,7 @@ Example:
     docker service create --name shepherd \
                         --constraint "node.role==manager" \
                         --env SLEEP_TIME="5m" \
+                        --env HOST="tcp://localhost:2375"
                         --env BLACKLIST_SERVICES="shepherd my-other-service" \
                         --env WITH_REGISTRY_AUTH="true" \
                         --env FILTER_SERVICES="label=com.mydomain.autodeploy"

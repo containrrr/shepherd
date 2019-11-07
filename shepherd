@@ -2,13 +2,15 @@
 set -euo pipefail
 
 server_version() {
-  docker version -f "{{.Server.Version}}"
+  local host=$1
+  docker -H "$host" version -f "{{.Server.Version}}"
 }
 
 update_services() {
   local blacklist="$1"
   local supports_detach_option=$2
   local supports_registry_auth=$3
+  local host=$4
   local detach_option=""
   local registry_auth=""
   local name
@@ -16,16 +18,16 @@ update_services() {
   [ $supports_detach_option = true ] && detach_option="--detach=false"
   [ $supports_registry_auth = true ] && registry_auth="--with-registry-auth"
 
-  for name in $(IFS=$'\n' docker service ls --quiet --filter "${FILTER_SERVICES}" --format '{{.Name}}'); do
+  for name in $(IFS=$'\n' docker -H "$host" service ls --quiet --filter "${FILTER_SERVICES}" --format '{{.Name}}'); do
     local image_with_digest image
     if [[ " $blacklist " != *" $name "* ]]; then
-      image_with_digest="$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
+      image_with_digest="$(docker -H "$host" service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
       image=$(echo "$image_with_digest" | cut -d@ -f1)
       echo "Trying to update service $name with image $image"
-      docker service update "$name" $detach_option $registry_auth --image="$image" > /dev/null
+      docker -H "$host" service update "$name" $detach_option $registry_auth --image="$image" > /dev/null
 
-      previousImage=$(docker service inspect "$name" -f '{{.PreviousSpec.TaskTemplate.ContainerSpec.Image}}')
-      currentImage=$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')
+      previousImage=$(docker -H "$host" service inspect "$name" -f '{{.PreviousSpec.TaskTemplate.ContainerSpec.Image}}')
+      currentImage=$(docker -H "$host" service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')
       if [ "$previousImage" == "$currentImage" ]; then
         echo "No updates to service $name!"
       else
@@ -36,12 +38,13 @@ update_services() {
 }
 
 main() {
-  local blacklist sleep_time supports_detach_option supports_registry_auth
+  local blacklist sleep_time supports_detach_option supports_registry_auth host
   blacklist="${BLACKLIST_SERVICES:-}"
   sleep_time="${SLEEP_TIME:-5m}"
+  host="${HOST:-unix:///var/run/docker.sock}"
 
   supports_detach_option=false
-  if [[ "$(server_version)" > "17.05" ]]; then
+  if [[ "$(server_version $host)" > "17.05" ]]; then
     supports_detach_option=true
     echo "Enabling synchronous service updates"
   fi
@@ -55,7 +58,7 @@ main() {
   [[ "$blacklist" != "" ]] && echo "Excluding services: $blacklist"
 
   while true; do
-    update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth"
+    update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth" "$host"
     echo "Sleeping $sleep_time before next update"
     sleep "$sleep_time"
   done
