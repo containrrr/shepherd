@@ -36,6 +36,8 @@ Alternatively you can specify a filter for the services you want updated using t
 
 You can enable private registry authentication by setting the `WITH_REGISTRY_AUTH` variable.
 
+You can enable notifications on service update with apprise, using the [apprise microservce](https://github.com/djmaze/apprise-microservice) and the `APPRISE_SIDECAR_URL` variable.
+
 Example:
 
     docker service create --name shepherd \
@@ -43,7 +45,8 @@ Example:
                         --env SLEEP_TIME="5m" \
                         --env BLACKLIST_SERVICES="shepherd my-other-service" \
                         --env WITH_REGISTRY_AUTH="true" \
-                        --env FILTER_SERVICES="label=com.mydomain.autodeploy"
+                        --env FILTER_SERVICES="label=com.mydomain.autodeploy" \
+                        --env APPRISE_SIDECAR_URL="apprise-microservice:5000" \
                         --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
                         --mount type=bind,source=/root/.docker/config.json,target=/root/.docker/config.json,ro \
                         mazzolino/shepherd
