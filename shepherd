@@ -12,6 +12,7 @@ update_services() {
   local detach_option=""
   local registry_auth=""
   local name
+  local apprise_sidecar_url="${APPRISE_SIDECAR_URL:-}"
 
   [ $supports_detach_option = true ] && detach_option="--detach=false"
   [ $supports_registry_auth = true ] && registry_auth="--with-registry-auth"
@@ -30,6 +31,11 @@ update_services() {
         echo "No updates to service $name!"
       else
         echo "Service $name was updated!"
+        if [[ "$apprise_sidecar_url" != "" ]]; then
+          title="[Shepherd] Service $name updated"
+          body="Service $name was updated from $previousImage to $currentImage"
+          curl -X POST --data "{\"title\": \"$title\", \"body\": \"$body\"}" "$apprise_sidecar_url"
+        fi
       fi
     fi
   done
