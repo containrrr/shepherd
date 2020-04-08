@@ -36,7 +36,7 @@ Alternatively you can specify a filter for the services you want updated using t
 
 You can enable private registry authentication by setting the `WITH_REGISTRY_AUTH` variable.
 
-You can enable notifications on service update with apprise, using the [apprise microservce](https://github.com/djmaze/apprise-microservice) and the `APPRISE_SIDECAR_URL` variable.
+You can enable notifications on service update with apprise, using the [apprise microservice](https://github.com/djmaze/apprise-microservice) and the `APPRISE_SIDECAR_URL` variable. See the file [docker-compose.apprise.yml](docker-compose.apprise.yml) for an example.
 
 Example:
 

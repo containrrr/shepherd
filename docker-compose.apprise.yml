@@ -1,0 +1,24 @@
+version: "3"
+
+services:
+  app:
+    build: .
+    image: mazzolino/shepherd
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - notification
+    deploy:
+      placement:
+        constraints:
+        - node.role == manager
+
+  notify:
+    image: mazzolino/apprise-microservice:0.1
+    environment:
+      NOTIFICATION_URLS: mailtos://user:pass@domain/?to=target@example.com
+    networks:
+      - notification
+
+networks:
+  notification:
