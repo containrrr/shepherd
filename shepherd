@@ -34,7 +34,7 @@ update_services() {
         if [[ "$apprise_sidecar_url" != "" ]]; then
           title="[Shepherd] Service $name updated"
           body="Service $name was updated from $previousImage to $currentImage"
-          curl -X POST --data "{\"title\": \"$title\", \"body\": \"$body\"}" "$apprise_sidecar_url"
+          curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\"}" "$apprise_sidecar_url"
         fi
       fi
     fi
