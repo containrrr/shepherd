@@ -4,6 +4,8 @@ services:
   app:
     build: .
     image: mazzolino/shepherd
+    environment:
+      APPRISE_SIDECAR_URL: notify:5000
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
