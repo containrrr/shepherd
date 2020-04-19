@@ -22,19 +22,24 @@ update_services() {
     if [[ " $blacklist " != *" $name "* ]]; then
       image_with_digest="$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
       image=$(echo "$image_with_digest" | cut -d@ -f1)
-      echo "Trying to update service $name with image $image"
-      docker service update "$name" $detach_option $registry_auth --image="$image" > /dev/null
 
-      previousImage=$(docker service inspect "$name" -f '{{.PreviousSpec.TaskTemplate.ContainerSpec.Image}}')
-      currentImage=$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')
-      if [ "$previousImage" == "$currentImage" ]; then
-        echo "No updates to service $name!"
+      if ! DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $image > /dev/null; then
+        echo "Error updating service $name! Image $image does not exist or it is not available"
       else
-        echo "Service $name was updated!"
-        if [[ "$apprise_sidecar_url" != "" ]]; then
-          title="[Shepherd] Service $name updated"
-          body="Service $name was updated from $previousImage to $currentImage"
-          curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\"}" "$apprise_sidecar_url"
+        echo "Trying to update service $name with image $image"
+        docker service update "$name" $detach_option $registry_auth --image="$image" > /dev/null
+
+        previousImage=$(docker service inspect "$name" -f '{{.PreviousSpec.TaskTemplate.ContainerSpec.Image}}')
+        currentImage=$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')
+        if [ "$previousImage" == "$currentImage" ]; then
+          echo "No updates to service $name!"
+        else
+          echo "Service $name was updated!"
+          if [[ "$apprise_sidecar_url" != "" ]]; then
+            title="[Shepherd] Service $name updated"
+            body="Service $name was updated from $previousImage to $currentImage"
+            curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\"}" "$apprise_sidecar_url"
+          fi
         fi
       fi
     fi
