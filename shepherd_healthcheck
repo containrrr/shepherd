@@ -1,0 +1,4 @@
+#!/bin/bash
+
+pgrep shepherd >/dev/null
+exit $?
