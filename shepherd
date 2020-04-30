@@ -18,7 +18,7 @@ update_services() {
 
   [ $supports_detach_option = true ] && detach_option="--detach=false"
   [ $supports_registry_auth = true ] && registry_auth="--with-registry-auth"
-  [ "$supports_insecure_registry" = true ] && insecure_registry_flag="--insecure"
+  [ $supports_insecure_registry = true ] && insecure_registry_flag="--insecure"
 
   for name in $(IFS=$'\n' docker service ls --quiet --filter "${FILTER_SERVICES}" --format '{{.Name}}'); do
     local image_with_digest image
