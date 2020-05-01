@@ -9,13 +9,16 @@ update_services() {
   local blacklist="$1"
   local supports_detach_option=$2
   local supports_registry_auth=$3
+  local supports_insecure_registry=$4
   local detach_option=""
   local registry_auth=""
+  local insecure_registry_flag=""
   local name
   local apprise_sidecar_url="${APPRISE_SIDECAR_URL:-}"
 
   [ $supports_detach_option = true ] && detach_option="--detach=false"
   [ $supports_registry_auth = true ] && registry_auth="--with-registry-auth"
+  [ $supports_insecure_registry = true ] && insecure_registry_flag="--insecure"
 
   for name in $(IFS=$'\n' docker service ls --quiet --filter "${FILTER_SERVICES}" --format '{{.Name}}'); do
     local image_with_digest image
@@ -23,7 +26,7 @@ update_services() {
       image_with_digest="$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
       image=$(echo "$image_with_digest" | cut -d@ -f1)
 
-      if ! DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $image > /dev/null; then
+      if ! DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $insecure_registry_flag $image > /dev/null; then
         echo "Error updating service $name! Image $image does not exist or it is not available"
       else
         echo "Trying to update service $name with image $image"
@@ -63,10 +66,16 @@ main() {
     echo "Send registry authentication details to swarm agents"
   fi
 
+  supports_insecure_registry=false
+  if [[ ${WITH_INSECURE_REGISTRY+x} ]]; then
+    supports_insecure_registry=true
+    echo "Connection to insecure registry available"
+  fi
+
   [[ "$blacklist" != "" ]] && echo "Excluding services: $blacklist"
 
   while true; do
-    update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth"
+    update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry"
     echo "Sleeping $sleep_time before next update"
     sleep "$sleep_time"
   done
