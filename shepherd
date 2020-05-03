@@ -78,7 +78,7 @@ main() {
   supports_no_resolve_image=false
   if [[ ${WITH_NO_RESOLVE_IMAGE+x} ]]; then
     supports_no_resolve_image=true
-    echo "Deployment with no resolve image allowed"
+    echo "Deployment without resolving image"
   fi
 
   [[ "$blacklist" != "" ]] && echo "Excluding services: $blacklist"
