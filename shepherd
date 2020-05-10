@@ -10,15 +10,18 @@ update_services() {
   local supports_detach_option=$2
   local supports_registry_auth=$3
   local supports_insecure_registry=$4
+  local supports_no_resolve_image=$5
   local detach_option=""
   local registry_auth=""
   local insecure_registry_flag=""
+  local no_resolve_image_flag=""
   local name
   local apprise_sidecar_url="${APPRISE_SIDECAR_URL:-}"
 
   [ $supports_detach_option = true ] && detach_option="--detach=false"
   [ $supports_registry_auth = true ] && registry_auth="--with-registry-auth"
   [ $supports_insecure_registry = true ] && insecure_registry_flag="--insecure"
+  [ $supports_no_resolve_image = true ] && no_resolve_image_flag="--no-resolve-image"
 
   for name in $(IFS=$'\n' docker service ls --quiet --filter "${FILTER_SERVICES}" --format '{{.Name}}'); do
     local image_with_digest image
@@ -30,7 +33,7 @@ update_services() {
         echo "Error updating service $name! Image $image does not exist or it is not available"
       else
         echo "Trying to update service $name with image $image"
-        docker service update "$name" $detach_option $registry_auth --image="$image" > /dev/null
+        docker service update "$name" $detach_option $registry_auth $no_resolve_image_flag --image="$image" > /dev/null
 
         previousImage=$(docker service inspect "$name" -f '{{.PreviousSpec.TaskTemplate.ContainerSpec.Image}}')
         currentImage=$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')
@@ -72,10 +75,16 @@ main() {
     echo "Connection to insecure registry available"
   fi
 
+  supports_no_resolve_image=false
+  if [[ ${WITH_NO_RESOLVE_IMAGE+x} ]]; then
+    supports_no_resolve_image=true
+    echo "Deployment without resolving image"
+  fi
+
   [[ "$blacklist" != "" ]] && echo "Excluding services: $blacklist"
 
   while true; do
-    update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry"
+    update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry" "$supports_no_resolve_image"
     echo "Sleeping $sleep_time before next update"
     sleep "$sleep_time"
   done
