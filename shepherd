@@ -18,13 +18,19 @@ update_services() {
   local blacklist="$1"
   local supports_detach_option=$2
   local supports_registry_auth=$3
+  local supports_insecure_registry=$4
+  local supports_no_resolve_image=$5
   local detach_option=""
   local registry_auth=""
+  local insecure_registry_flag=""
+  local no_resolve_image_flag=""
   local name
   local apprise_sidecar_url="${APPRISE_SIDECAR_URL:-}"
 
   [ $supports_detach_option = true ] && detach_option="--detach=false"
   [ $supports_registry_auth = true ] && registry_auth="--with-registry-auth"
+  [ $supports_insecure_registry = true ] && insecure_registry_flag="--insecure"
+  [ $supports_no_resolve_image = true ] && no_resolve_image_flag="--no-resolve-image"
 
   for name in $(IFS=$'\n' docker service ls --quiet --filter "${FILTER_SERVICES}" --format '{{.Name}}'); do
     local image_with_digest image
@@ -32,11 +38,11 @@ update_services() {
       image_with_digest="$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
       image=$(echo "$image_with_digest" | cut -d@ -f1)
 
-      if ! DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $image > /dev/null; then
+      if ! DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $insecure_registry_flag $image > /dev/null; then
         logger "Error updating service $name! Image $image does not exist or it is not available"
       else
         logger "Trying to update service $name with image $image" "true"
-        docker service update "$name" $detach_option $registry_auth --image="$image" > /dev/null
+        docker service update "$name" $detach_option $registry_auth $no_resolve_image_flag --image="$image" > /dev/null
 
         previousImage=$(docker service inspect "$name" -f '{{.PreviousSpec.TaskTemplate.ContainerSpec.Image}}')
         currentImage=$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')
@@ -77,10 +83,22 @@ main() {
     logger "Send registry authentication details to swarm agents"
   fi
 
+  supports_insecure_registry=false
+  if [[ ${WITH_INSECURE_REGISTRY+x} ]]; then
+    supports_insecure_registry=true
+    logger "Connection to insecure registry available"
+  fi
+
+  supports_no_resolve_image=false
+  if [[ ${WITH_NO_RESOLVE_IMAGE+x} ]]; then
+    supports_no_resolve_image=true
+    logger "Deployment without resolving image"
+  fi
+  
   [[ "$blacklist" != "" ]] && logger "Excluding services: $blacklist"
 
   while true; do
-    update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth"
+    update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry" "$supports_no_resolve_image"
     logger "Sleeping $sleep_time before next update" "true"
     sleep "$sleep_time"
   done
