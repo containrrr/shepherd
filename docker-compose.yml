@@ -10,3 +10,8 @@ services:
       placement:
         constraints:
         - node.role == manager
+    environment:
+      TZ: 'US/Eastern'
+      SLEEP_TIME: '5m'
+      FILTER_SERVICES: ''
+      VERBOSE: 'true'
