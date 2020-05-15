@@ -42,6 +42,7 @@ update_services() {
         logger "Error updating service $name! Image $image does not exist or it is not available"
       else
         logger "Trying to update service $name with image $image" "true"
+
         docker service update "$name" $detach_option $registry_auth $no_resolve_image_flag --image="$image" > /dev/null
 
         previousImage=$(docker service inspect "$name" -f '{{.PreviousSpec.TaskTemplate.ContainerSpec.Image}}')
