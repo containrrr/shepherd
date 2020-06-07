@@ -66,11 +66,9 @@ main() {
   local blacklist sleep_time supports_detach_option supports_registry_auth tz verbose
   blacklist="${BLACKLIST_SERVICES:-}"
   sleep_time="${SLEEP_TIME:-5m}"
-  tz="${TZ:-EST}"
   verbose="${VERBOSE:-true}"
-  
-  echo $tz > /etc/timezone
-  logger "Timezone set to $tz"
+ 
+  logger "Timezone set to $TZ"
 
   supports_detach_option=false
   if [[ "$(server_version)" > "17.05" ]]; then
