@@ -6,6 +6,10 @@ services:
     image: mazzolino/shepherd
     environment:
       APPRISE_SIDECAR_URL: notify:5000
+      TZ: 'US/Eastern'
+      SLEEP_TIME: '5m'
+      FILTER_SERVICES: ''
+      VERBOSE: 'true'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:

@@ -5,6 +5,15 @@ server_version() {
   docker version -f "{{.Server.Version}}"
 }
 
+logger() {
+  local log="$1"
+  local is_verbose_log="${2:-false}"
+  
+  if [[ "$is_verbose_log" == "true" && "$verbose" == "true" || "$is_verbose_log" == "false" ]]; then
+    echo "$(date) $log"
+  fi
+}
+
 update_services() {
   local blacklist="$1"
   local supports_detach_option=$2
@@ -30,20 +39,21 @@ update_services() {
       image=$(echo "$image_with_digest" | cut -d@ -f1)
 
       if ! DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $insecure_registry_flag $image > /dev/null; then
-        echo "Error updating service $name! Image $image does not exist or it is not available"
+        logger "Error updating service $name! Image $image does not exist or it is not available"
       else
-        echo "Trying to update service $name with image $image"
+        logger "Trying to update service $name with image $image" "true"
+
         docker service update "$name" $detach_option $registry_auth $no_resolve_image_flag --image="$image" > /dev/null
 
         previousImage=$(docker service inspect "$name" -f '{{.PreviousSpec.TaskTemplate.ContainerSpec.Image}}')
         currentImage=$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')
         if [ "$previousImage" == "$currentImage" ]; then
-          echo "No updates to service $name!"
+          logger "No updates to service $name!" "true"
         else
-          echo "Service $name was updated!"
+          logger "Service $name was updated!"
           if [[ "$apprise_sidecar_url" != "" ]]; then
             title="[Shepherd] Service $name updated"
-            body="Service $name was updated from $previousImage to $currentImage"
+            body="$(date) Service $name was updated from $previousImage to $currentImage"
             curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\"}" "$apprise_sidecar_url"
           fi
         fi
@@ -53,39 +63,42 @@ update_services() {
 }
 
 main() {
-  local blacklist sleep_time supports_detach_option supports_registry_auth
+  local blacklist sleep_time supports_detach_option supports_registry_auth tz verbose
   blacklist="${BLACKLIST_SERVICES:-}"
   sleep_time="${SLEEP_TIME:-5m}"
+  verbose="${VERBOSE:-true}"
+ 
+  logger "Timezone set to $TZ"
 
   supports_detach_option=false
   if [[ "$(server_version)" > "17.05" ]]; then
     supports_detach_option=true
-    echo "Enabling synchronous service updates"
+    logger "Enabling synchronous service updates"
   fi
 
   supports_registry_auth=false
   if [[ ${WITH_REGISTRY_AUTH+x} ]]; then
     supports_registry_auth=true
-    echo "Send registry authentication details to swarm agents"
+    logger "Send registry authentication details to swarm agents"
   fi
 
   supports_insecure_registry=false
   if [[ ${WITH_INSECURE_REGISTRY+x} ]]; then
     supports_insecure_registry=true
-    echo "Connection to insecure registry available"
+    logger "Connection to insecure registry available"
   fi
 
   supports_no_resolve_image=false
   if [[ ${WITH_NO_RESOLVE_IMAGE+x} ]]; then
     supports_no_resolve_image=true
-    echo "Deployment without resolving image"
+    logger "Deployment without resolving image"
   fi
-
-  [[ "$blacklist" != "" ]] && echo "Excluding services: $blacklist"
+  
+  [[ "$blacklist" != "" ]] && logger "Excluding services: $blacklist"
 
   while true; do
     update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry" "$supports_no_resolve_image"
-    echo "Sleeping $sleep_time before next update"
+    logger "Sleeping $sleep_time before next update" "true"
     sleep "$sleep_time"
   done
 }
