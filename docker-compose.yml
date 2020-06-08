@@ -4,14 +4,14 @@ services:
   app:
     build: .
     image: mazzolino/shepherd
+    environment:
+      TZ: 'US/Eastern'
+      SLEEP_TIME: '5m'
+      FILTER_SERVICES: ''
+      VERBOSE: 'true'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     deploy:
       placement:
         constraints:
         - node.role == manager
-    environment:
-      TZ: 'US/Eastern'
-      SLEEP_TIME: '5m'
-      FILTER_SERVICES: ''
-      VERBOSE: 'true'
