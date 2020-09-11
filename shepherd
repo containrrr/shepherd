@@ -62,7 +62,7 @@ update_services() {
             logger "Cleaning up old docker images, leaving last $image_autoclean_limit"
             image_ids=$(docker images -a | grep $name | awk '{print $3}')
             if [[ $(echo $image_ids | wc -w) > $image_autoclean_limit ]]; then
-              docker rmi $(docker images -a | grep $name | awk '{print $3}' | tail -n $((image_autoclean_limit + 1)))
+              docker rmi $(echo $image_ids | xargs -n 1 | tail -n $((image_autoclean_limit + 1)))
             fi
           fi
         fi
