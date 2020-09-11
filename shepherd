@@ -68,10 +68,11 @@ update_services() {
 }
 
 main() {
-  local blacklist sleep_time supports_detach_option supports_registry_auth tz verbose
+  local blacklist sleep_time supports_detach_option supports_registry_auth tz verbose image_autoclean_limit
   blacklist="${BLACKLIST_SERVICES:-}"
   sleep_time="${SLEEP_TIME:-5m}"
   verbose="${VERBOSE:-true}"
+  image_autoclean_limit="${IMAGE_AUTOCLEAN_LIMIT:-}"
 
   logger "Timezone set to $TZ"
 
@@ -102,7 +103,7 @@ main() {
   [[ "$blacklist" != "" ]] && logger "Excluding services: $blacklist"
 
   while true; do
-    update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry" "$supports_no_resolve_image"
+    update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry" "$supports_no_resolve_image" "$image_autoclean_limit"
     logger "Sleeping $sleep_time before next update" "true"
     sleep "$sleep_time"
   done
