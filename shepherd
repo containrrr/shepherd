@@ -60,10 +60,16 @@ update_services() {
 
           if [[ "$image_autoclean_limit" != "" ]]; then
             logger "Cleaning up old docker images, leaving last $image_autoclean_limit"
-            image_ids=$(docker images -a | grep $name | awk '{print $3}')
-            if [[ $(echo $image_ids | wc -w) > $image_autoclean_limit ]]; then
-              docker rmi $(echo $image_ids | xargs -n 1 | tail -n $((image_autoclean_limit + 1)))
+            image_ids=$(docker images -a --filter=reference='*/$name*' | awk '{print $3}')
+            image_ids_count=$(echo $image_ids | wc -w)
+            if [[ $image_ids_count > $image_autoclean_limit ]]; then
+              # delete dead containers
+              docker container prune -f
+              # delete images over limit
+              docker rmi $(echo $image_ids | xargs -n 1 | tail -n $((image_ids_count - image_autoclean_limit)))
             fi
+            # clean dangling images if any
+            docker image prune -f
           fi
         fi
       fi
