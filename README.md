@@ -53,6 +53,7 @@ Example:
                         --env WITH_NO_RESOLVE_IMAGE="true" \
                         --env FILTER_SERVICES="label=com.mydomain.autodeploy" \
                         --env APPRISE_SIDECAR_URL="apprise-microservice:5000" \
+                        --env IMAGE_AUTOCLEAN_LIMIT="5" \
                         --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
                         --mount type=bind,source=/root/.docker/config.json,target=/root/.docker/config.json,ro \
                         mazzolino/shepherd

@@ -8,7 +8,7 @@ server_version() {
 logger() {
   local log="$1"
   local is_verbose_log="${2:-false}"
-  
+
   if [[ "$is_verbose_log" == "true" && "$verbose" == "true" || "$is_verbose_log" == "false" ]]; then
     echo "$(date) $log"
   fi
@@ -20,6 +20,7 @@ update_services() {
   local supports_registry_auth=$3
   local supports_insecure_registry=$4
   local supports_no_resolve_image=$5
+  local image_autoclean_limit=$6
   local detach_option=""
   local registry_auth=""
   local insecure_registry_flag=""
@@ -56,6 +57,16 @@ update_services() {
             body="$(date) Service $name was updated from $previousImage to $currentImage"
             curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\"}" "$apprise_sidecar_url"
           fi
+
+          if [[ "$image_autoclean_limit" != "" ]]; then
+            logger "Cleaning up old docker images, leaving last $image_autoclean_limit"
+            image_ids=$(docker images -a --filter=reference='*/$name*' | awk '{print $3}')
+            image_ids_count=$(echo $image_ids | wc -w)
+            if [[ $image_ids_count > $image_autoclean_limit ]]; then
+              docker container prune -f
+              docker rmi $(echo $image_ids | xargs -n 1 | tail -n $((image_ids_count - image_autoclean_limit)))
+            fi
+          fi
         fi
       fi
     fi
@@ -63,11 +74,12 @@ update_services() {
 }
 
 main() {
-  local blacklist sleep_time supports_detach_option supports_registry_auth tz verbose
+  local blacklist sleep_time supports_detach_option supports_registry_auth tz verbose image_autoclean_limit
   blacklist="${BLACKLIST_SERVICES:-}"
   sleep_time="${SLEEP_TIME:-5m}"
   verbose="${VERBOSE:-true}"
- 
+  image_autoclean_limit="${IMAGE_AUTOCLEAN_LIMIT:-}"
+
   logger "Timezone set to $TZ"
 
   supports_detach_option=false
@@ -93,11 +105,11 @@ main() {
     supports_no_resolve_image=true
     logger "Deployment without resolving image"
   fi
-  
+
   [[ "$blacklist" != "" ]] && logger "Excluding services: $blacklist"
 
   while true; do
-    update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry" "$supports_no_resolve_image"
+    update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry" "$supports_no_resolve_image" "$image_autoclean_limit"
     logger "Sleeping $sleep_time before next update" "true"
     sleep "$sleep_time"
   done
