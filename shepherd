@@ -60,7 +60,7 @@ update_services() {
 
           if [[ "$image_autoclean_limit" != "" ]]; then
             logger "Cleaning up old docker images, leaving last $image_autoclean_limit"
-            img_name=$(docker service inspect "$name" -f '{{.PreviousSpec.TaskTemplate.ContainerSpec.Image}}' | awk -F'/|:' '{print $2}')
+            img_name=$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}' | awk -F'/|:' '{print $2}')
             image_ids=$(docker images -aq --filter=reference=*/$img_name)
             image_ids_count=$(echo $image_ids | wc -w)
             if [[ $image_ids_count > $image_autoclean_limit ]]; then
