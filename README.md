@@ -42,6 +42,8 @@ You can force image deployment whatever the architecture by setting the `WITH_NO
 
 You can enable notifications on service update with apprise, using the [apprise microservice](https://github.com/djmaze/apprise-microservice) and the `APPRISE_SIDECAR_URL` variable. See the file [docker-compose.apprise.yml](docker-compose.apprise.yml) for an example.
 
+You can enable old image autocleaning on service update by setting the `IMAGE_AUTOCLEAN_LIMIT` variable.
+
 Example:
 
     docker service create --name shepherd \
