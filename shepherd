@@ -109,11 +109,15 @@ main() {
 
   [[ "$blacklist" != "" ]] && logger "Excluding services: $blacklist"
 
-  while true; do
+  if [[ ${RUN_ONCE_AND_EXIT+x} ]]; then
     update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry" "$supports_no_resolve_image" "$image_autoclean_limit"
-    logger "Sleeping $sleep_time before next update" "true"
-    sleep "$sleep_time"
-  done
+  else
+    while true; do
+      update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry" "$supports_no_resolve_image" "$image_autoclean_limit"
+      logger "Sleeping $sleep_time before next update" "true"
+      sleep "$sleep_time"
+    done
+  fi
 }
 
 main "$@"
