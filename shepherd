@@ -65,7 +65,7 @@ update_services() {
             image_ids_count=$(echo $image_ids | wc -w)
             if [[ $image_ids_count > $image_autoclean_limit ]]; then
               docker container prune -f
-              docker rmi $(echo $image_ids | xargs -n 1 | tail -n $((image_ids_count - image_autoclean_limit)))
+              docker rmi $(echo $image_ids | xargs -n 1 | tail -n $(expr $image_ids_count - $image_autoclean_limit))
             fi
           fi
         fi
