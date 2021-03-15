@@ -65,7 +65,7 @@ update_services() {
             image_ids_count=$(echo $image_ids | wc -w)
             if [[ $image_ids_count > $image_autoclean_limit ]]; then
               docker container prune -f
-              docker rmi $(echo $image_ids | xargs -n 1 | tail -n $((image_ids_count - image_autoclean_limit)))
+              docker rmi $(echo $image_ids | xargs -n 1 | tail -n $(expr $image_ids_count - $image_autoclean_limit))
             fi
           fi
         fi
@@ -109,11 +109,15 @@ main() {
 
   [[ "$blacklist" != "" ]] && logger "Excluding services: $blacklist"
 
-  while true; do
+  if [[ ${RUN_ONCE_AND_EXIT+x} ]]; then
     update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry" "$supports_no_resolve_image" "$image_autoclean_limit"
-    logger "Sleeping $sleep_time before next update" "true"
-    sleep "$sleep_time"
-  done
+  else
+    while true; do
+      update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry" "$supports_no_resolve_image" "$image_autoclean_limit"
+      logger "Sleeping $sleep_time before next update" "true"
+      sleep "$sleep_time"
+    done
+  fi
 }
 
 main "$@"
