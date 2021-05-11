@@ -27,6 +27,7 @@ update_services() {
   local no_resolve_image_flag=""
   local name
   local apprise_sidecar_url="${APPRISE_SIDECAR_URL:-}"
+  local slack_url="${SLACK_URL:-}"
 
   [ $supports_detach_option = true ] && detach_option="--detach=false"
   [ $supports_registry_auth = true ] && registry_auth="--with-registry-auth"
@@ -56,6 +57,11 @@ update_services() {
             title="[Shepherd] Service $name updated"
             body="$(date) Service $name was updated from $previousImage to $currentImage"
             curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\"}" "$apprise_sidecar_url"
+          fi
+
+	  if [[ "$slack_url" != "" ]]; then
+            body="[Shepherd] Service $name was updated from $previousImage to $currentImage"
+            curl -X POST -H "Content-Type: application/json" --data "{\"text\": \"$body\"}" "$slack_url"
           fi
 
           if [[ "$image_autoclean_limit" != "" ]]; then

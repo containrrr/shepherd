@@ -42,6 +42,8 @@ You can force image deployment whatever the architecture by setting the `WITH_NO
 
 You can enable notifications on service update with apprise, using the [apprise microservice](https://github.com/djmaze/apprise-microservice) and the `APPRISE_SIDECAR_URL` variable. See the file [docker-compose.apprise.yml](docker-compose.apprise.yml) for an example.
 
+You can enable Slack notifications by specifying the webhook URL as `SLACK_URL`.
+
 You can enable old image autocleaning on service update by setting the `IMAGE_AUTOCLEAN_LIMIT` variable.
 
 You can enable one shot running with `RUN_ONCE_AND_EXIT` variable.
@@ -57,6 +59,7 @@ Example:
                         --env WITH_NO_RESOLVE_IMAGE="true" \
                         --env FILTER_SERVICES="label=com.mydomain.autodeploy" \
                         --env APPRISE_SIDECAR_URL="apprise-microservice:5000" \
+                        --env SLACK_URL="https://hooks.slack.com/services/.../..." \
                         --env IMAGE_AUTOCLEAN_LIMIT="5" \
                         --env RUN_ONCE_AND_EXIT="true" \
                         --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
