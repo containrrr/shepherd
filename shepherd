@@ -15,7 +15,7 @@ logger() {
 }
 
 update_services() {
-  local blacklist="$1"
+  local ignorelist="$1"
   local supports_detach_option=$2
   local supports_registry_auth=$3
   local supports_insecure_registry=$4
@@ -35,7 +35,7 @@ update_services() {
 
   for name in $(IFS=$'\n' docker service ls --quiet --filter "${FILTER_SERVICES}" --format '{{.Name}}'); do
     local image_with_digest image
-    if [[ " $blacklist " != *" $name "* ]]; then
+    if [[ " $ignorelist " != *" $name "* ]]; then
       image_with_digest="$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
       image=$(echo "$image_with_digest" | cut -d@ -f1)
 
@@ -75,8 +75,8 @@ update_services() {
 }
 
 main() {
-  local blacklist sleep_time supports_detach_option supports_registry_auth tz verbose image_autoclean_limit
-  blacklist="${BLACKLIST_SERVICES:-}"
+  local sleep_time supports_detach_option supports_registry_auth tz verbose image_autoclean_limit ignorelist
+  ignorelist="${IGNORELIST_SERVICES:-}"
   sleep_time="${SLEEP_TIME:-5m}"
   verbose="${VERBOSE:-true}"
   image_autoclean_limit="${IMAGE_AUTOCLEAN_LIMIT:-}"
@@ -107,13 +107,13 @@ main() {
     logger "Deployment without resolving image"
   fi
 
-  [[ "$blacklist" != "" ]] && logger "Excluding services: $blacklist"
+  [[ "$ignorelist" != "" ]] && logger "Excluding services: $ignorelist"
 
   if [[ ${RUN_ONCE_AND_EXIT+x} ]]; then
-    update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry" "$supports_no_resolve_image" "$image_autoclean_limit"
+    update_services "$ignorelist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry" "$supports_no_resolve_image" "$image_autoclean_limit"
   else
     while true; do
-      update_services "$blacklist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry" "$supports_no_resolve_image" "$image_autoclean_limit"
+      update_services "$ignorelist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry" "$supports_no_resolve_image" "$image_autoclean_limit"
       logger "Sleeping $sleep_time before next update" "true"
       sleep "$sleep_time"
     done
