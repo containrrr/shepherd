@@ -21,6 +21,9 @@ update_services() {
   local supports_insecure_registry=$4
   local supports_no_resolve_image=$5
   local image_autoclean_limit=$6
+  local registry_user="$7"
+  local registry_password="$8"
+  local registry_host="$9"
   local detach_option=""
   local registry_auth=""
   local insecure_registry_flag=""
@@ -32,6 +35,11 @@ update_services() {
   [ $supports_registry_auth = true ] && registry_auth="--with-registry-auth"
   [ $supports_insecure_registry = true ] && insecure_registry_flag="--insecure"
   [ $supports_no_resolve_image = true ] && no_resolve_image_flag="--no-resolve-image"
+
+  if [[ -n "$registry_user" ]]; then
+    logger "Trying to login into registry $registry_host"
+    echo "$registry_password" | docker login --username="$registry_user" --password-stdin "$registry_host"
+  fi
 
   for name in $(IFS=$'\n' docker service ls --quiet --filter "${FILTER_SERVICES}" --format '{{.Name}}'); do
     local image_with_digest image
@@ -76,6 +84,9 @@ update_services() {
 
 main() {
   local sleep_time supports_detach_option supports_registry_auth tz verbose image_autoclean_limit ignorelist
+  local registry_user=""
+  local registry_password=""
+  local registry_host=""
   ignorelist="${IGNORELIST_SERVICES:-}"
   sleep_time="${SLEEP_TIME:-5m}"
   verbose="${VERBOSE:-true}"
@@ -90,6 +101,14 @@ main() {
   fi
 
   supports_registry_auth=false
+  if [[ ${REGISTRY_USER+x} ]]; then
+    supports_registry_auth=true
+    registry_user="${REGISTRY_USER}"
+    registry_password="${REGISTRY_PASSWORD}"
+    registry_host="${REGISTRY_HOST:-}"
+    logger "Send given registry authentication details to swarm agents"
+  fi
+
   if [[ ${WITH_REGISTRY_AUTH+x} ]]; then
     supports_registry_auth=true
     logger "Send registry authentication details to swarm agents"
@@ -110,10 +129,10 @@ main() {
   [[ "$ignorelist" != "" ]] && logger "Excluding services: $ignorelist"
 
   if [[ ${RUN_ONCE_AND_EXIT+x} ]]; then
-    update_services "$ignorelist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry" "$supports_no_resolve_image" "$image_autoclean_limit"
+    update_services "$ignorelist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry" "$supports_no_resolve_image" "$image_autoclean_limit" "$registry_user" "$registry_password" "$registry_host"
   else
     while true; do
-      update_services "$ignorelist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry" "$supports_no_resolve_image" "$image_autoclean_limit"
+      update_services "$ignorelist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry" "$supports_no_resolve_image" "$image_autoclean_limit" "$registry_user" "$registry_password" "$registry_host"
       logger "Sleeping $sleep_time before next update" "true"
       sleep "$sleep_time"
     done
