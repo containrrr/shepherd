@@ -39,6 +39,8 @@ Alternatively you can specify a filter for the services you want updated using t
 
 You can enable private registry authentication by setting the `WITH_REGISTRY_AUTH` variable.
 
+If you need to authenticate to a registry (for example in order to get around the [Docker Hub rate limits](https://www.docker.com/increase-rate-limit)), you can set the variables `REGISTRY_USER` and `REGISTRY_PASSWORD`. If you are not using Docker Hub but a private registry, set `REGISTRY_HOST` to the hostname of your registry.
+
 You can enable connection to insecure private registry by setting the `WITH_INSECURE_REGISTRY` variable.
 
 You can force image deployment whatever the architecture by setting the `WITH_NO_RESOLVE_IMAGE` variable.
