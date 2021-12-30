@@ -1,4 +1,5 @@
 #!/bin/bash
+source env_secrets_expand.sh
 set -euo pipefail
 
 server_version() {
@@ -104,13 +105,7 @@ main() {
   if [[ ${REGISTRY_USER+x} ]]; then
     supports_registry_auth=true
     registry_user="${REGISTRY_USER}"
-    
-    if [[ ${REGISTRY_PASSWORD_FILE+x} ]]; then 
-      registry_password="${cat $REGISTRY_PASSWORD_FILE}"
-    else
-      registry_password="${REGISTRY_PASSWORD}"
-    fi
-
+    registry_password="${REGISTRY_PASSWORD}"
     registry_host="${REGISTRY_HOST:-}"
     logger "Send given registry authentication details to swarm agents"
   fi
