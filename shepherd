@@ -1,6 +1,8 @@
 #!/bin/bash
-source env_secrets_expand.sh
 set -euo pipefail
+
+# set REGISTERY_PASSWORD
+export REGISTRY_PASSWORD=$(cat $REGISTRY_PASSWORD_FILE)
 
 server_version() {
   docker version -f "{{.Server.Version}}"
