@@ -105,7 +105,7 @@ main() {
     supports_registry_auth=true
     registry_user="${REGISTRY_USER}"
     
-    if [[${REGISTRY_PASSWORD_FILE+x}]]; then 
+    if [[ ${REGISTRY_PASSWORD_FILE+x} ]]; then 
       registry_password="${cat $REGISTRY_PASSWORD_FILE}"
     else
       registry_password="${REGISTRY_PASSWORD}"
