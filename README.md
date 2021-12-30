@@ -13,6 +13,7 @@ A Docker swarm service for automatically updating your services whenever their b
                           mazzolino/shepherd
 
 ## Or with docker-compose
+
     version: "3"
     services:
       ...
@@ -33,6 +34,8 @@ Shepherd will try to update your services every 5 minutes by default. You can ad
 You can prevent services from being updated by appending them to the `IGNORELIST_SERVICES` variable. This should be a space-separated list of service names.
 
 Alternatively you can specify a filter for the services you want updated using the `FILTER_SERVICES` variable. This can be anything accepted by the filtering flag in `docker service ls`.
+
+> **NOTE:** `FILTER_SERVICES` using `label` [may not work on docker swarm](https://github.com/moby/moby/issues/28813).
 
 You can enable private registry authentication by setting the `WITH_REGISTRY_AUTH` variable.
 
