@@ -44,7 +44,9 @@ update_services() {
       else
         logger "Trying to update service $name with image $image" "true"
 
-        docker service update "$name" $detach_option $registry_auth $no_resolve_image_flag --image="$image" > /dev/null
+        if ! docker service update "$name" $detach_option $registry_auth $no_resolve_image_flag --image="$image" > /dev/null; then
+          logger "Service $name update failed!"
+        fi
 
         previousImage=$(docker service inspect "$name" -f '{{.PreviousSpec.TaskTemplate.ContainerSpec.Image}}')
         currentImage=$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')
