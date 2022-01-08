@@ -1,93 +1,26 @@
-kind: pipeline
-name: amd64
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-  - name: build
-    image: plugins/docker
-    settings:
-      auto_tag: true
-      auto_tag_suffix: amd64
-      repo: mazzolino/shepherd
-      username:
-        from_secret: docker_username
-      password:
-        from_secret: docker_password
-    when:
-      event:
-        exclude:
-          - pull_request
-
 ---
 kind: pipeline
-name: arm
-
-platform:
-  os: linux
-  arch: arm64
+name: default
 
 steps:
-  - name: build
-    image: plugins/docker:linux-arm
+  - name: build & push
+    image: mazzolino/drone-docker-buildx:20
     settings:
       auto_tag: true
-      auto_tag_suffix: arm
       repo: mazzolino/shepherd
-      username:
-        from_secret: docker_username
-      password:
-        from_secret: docker_password
-    when:
-      event:
-        exclude:
-          - pull_request
-
----
-kind: pipeline
-name: arm64
-
-platform:
-  os: linux
-  arch: arm64
-
-steps:
-  - name: build
-    image: plugins/docker:linux-arm64
-    settings:
-      auto_tag: true
-      auto_tag_suffix: arm64
-      repo: mazzolino/shepherd
-      username:
-        from_secret: docker_username
-      password:
-        from_secret: docker_password
-    when:
-      event:
-        exclude:
-          - pull_request
----
-kind: pipeline
-name: manifest
-
-steps:
-  - name: manifest
-    image: plugins/manifest:1
-    settings:
-      spec: manifest.tmpl
-      auto_tag: true
-      username:
-        from_secret: docker_username
-      password:
-        from_secret: docker_password
       platforms:
         - linux/amd64
-        - linux/arm
         - linux/arm64
+        - linux/armhf
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
 
-depends_on:
-  - amd64
-  - arm
-  - arm64
+trigger:
+  event:
+    exclude:
+      - pull_request
+---
+kind: signature
+hmac: 38ab422a8b7ec0e95f6a92c1a224bb102b8a2ed4f37501ade35ff7a4cb29729b
