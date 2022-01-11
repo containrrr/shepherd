@@ -1,4 +1,4 @@
-FROM docker
+FROM mazzolino/docker:20
 
 ENV SLEEP_TIME='5m'
 ENV FILTER_SERVICES=''
