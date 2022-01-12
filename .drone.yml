@@ -1,9 +1,9 @@
 ---
 kind: pipeline
-name: default
+name: release
 
 steps:
-  - name: build & push
+  - name: build & push release
     image: thegeeklab/drone-docker-buildx:20.11@sha256:327b6fb15dc841cf80c7c429f60d695efd7c7a476fe363afac25a58befd4c203
     settings:
       auto_tag: true
@@ -21,8 +21,31 @@ trigger:
   event:
     exclude:
       - pull_request
+
+---
+kind: pipeline
+name: pr
+
+steps:
+  - name: build & push PR
+    image: thegeeklab/drone-docker-buildx:20.11@sha256:327b6fb15dc841cf80c7c429f60d695efd7c7a476fe363afac25a58befd4c203
+    settings:
+      repo: mazzolino/shepherd
+      tags:
+        - pr-${DRONE_PULL_REQUEST}
+      platforms:
+        - linux/amd64
+        - linux/arm64
+        - linux/armhf
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+
+trigger:
+  event:
+    - pull_request
+
 ---
 kind: signature
-hmac: 7a382995e75bae16394a9cd0fbb34ed56ac392fa932b15ea57bda513240ee5f7
-
-...
+hmac: d065ad11566d347b9bb8185525e687b936332efe07826e6070cee29bca196018
