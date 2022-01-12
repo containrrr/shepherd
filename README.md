@@ -35,6 +35,8 @@ You can prevent services from being updated by appending them to the `IGNORELIST
 
 Alternatively you can specify a filter for the services you want updated using the `FILTER_SERVICES` variable. This can be anything accepted by the filtering flag in `docker service ls`.
 
+You can set Shepherd to roll back a service to the previous version if the update fails by setting the `ROLLBACK_ON_FAILURE` variable.
+
 You can enable private registry authentication by setting the `WITH_REGISTRY_AUTH` variable.
 
 If you need to authenticate to a registry (for example in order to get around the [Docker Hub rate limits](https://www.docker.com/increase-rate-limit)), you can set the variables `REGISTRY_USER` and `REGISTRY_PASSWORD`. If you are not using Docker Hub but a private registry, set `REGISTRY_HOST` to the hostname of your registry.
@@ -62,6 +64,7 @@ Example:
                         --env APPRISE_SIDECAR_URL="apprise-microservice:5000" \
                         --env IMAGE_AUTOCLEAN_LIMIT="5" \
                         --env RUN_ONCE_AND_EXIT="true" \
+                        --env ROLLBACK_ON_FAILURE="true" \
                         --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
                         --mount type=bind,source=/root/.docker/config.json,target=/root/.docker/config.json,ro \
                         mazzolino/shepherd
