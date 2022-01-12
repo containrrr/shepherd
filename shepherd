@@ -63,6 +63,7 @@ update_services() {
             body="$(date) Service $name failed to update to $(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
             curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\"}" "$apprise_sidecar_url"
           fi
+          continue    # continue with next service
         fi
 
         previousImage=$(docker service inspect "$name" -f '{{.PreviousSpec.TaskTemplate.ContainerSpec.Image}}')
