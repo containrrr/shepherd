@@ -94,6 +94,16 @@ update_services() {
   done
 }
 
+# retrieve registry password from docker secrets or environment, in this order
+get_registry_password() {
+    local password_file_path="/run/secrets/shepherd_registry_password"
+    if [[ -f "$password_file_path" ]]; then
+        cat "$password_file_path"
+    else
+        echo "${REGISTRY_PASSWORD}"
+    fi
+}
+
 main() {
   local sleep_time supports_detach_option supports_registry_auth tz verbose image_autoclean_limit ignorelist
   local registry_user=""
@@ -116,7 +126,7 @@ main() {
   if [[ ${REGISTRY_USER+x} ]]; then
     supports_registry_auth=true
     registry_user="${REGISTRY_USER}"
-    registry_password="${REGISTRY_PASSWORD}"
+    registry_password="$(get_registry_password)"
     registry_host="${REGISTRY_HOST:-}"
     logger "Send given registry authentication details to swarm agents"
   fi
