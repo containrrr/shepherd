@@ -51,6 +51,8 @@ You can enable old image autocleaning on service update by setting the `IMAGE_AU
 
 You can enable one shot running with `RUN_ONCE_AND_EXIT` variable.
 
+If you care about log entries having the right timezone, you can set the `TZ` variable to the correct value (make sure to *not* include quotation marks in the variable value).
+
 Example:
 
     docker service create --name shepherd \
@@ -65,6 +67,7 @@ Example:
                         --env IMAGE_AUTOCLEAN_LIMIT="5" \
                         --env RUN_ONCE_AND_EXIT="true" \
                         --env ROLLBACK_ON_FAILURE="true" \
+                        --env TZ=Europe/Berlin \
                         --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
                         --mount type=bind,source=/root/.docker/config.json,target=/root/.docker/config.json,ro \
                         mazzolino/shepherd
