@@ -43,6 +43,40 @@ You can enable private registry authentication by setting the `WITH_REGISTRY_AUT
 
 If you need to authenticate to a registry (for example in order to get around the [Docker Hub rate limits](https://www.docker.com/increase-rate-limit)), you can set the variable `REGISTRY_USER` and store the password either in a [docker secret](https://docs.docker.com/engine/swarm/secrets/) named `shepherd_registry_password` or in the environment variable `REGISTRY_PASSWORD`. If you are not using Docker Hub but a private registry, set `REGISTRY_HOST` to the hostname of your registry.
 
+It is also possible to put all authentication information in a secret file. This approach is required if you need to authenticate with multiple accounts to the same registry (eg authenticate to the Gitlab registry for images from different projects). The content of the file is `<TAB>` separated and has 4 columns:
+* id: an identifier for the account. This should be an acceptable [Docker config name](https://docs.docker.com/engine/swarm/configs/).
+* registry: the registry to authenticate against, eg `registry.gitlab.com`
+* login: the user to authenticate as
+* password: the password to authenticate with
+Lines starting with `#` are comments, and are ignored, as are invalid lines.
+Here is an example:
+```
+blog	registry.gitlab.com	gitlab+deploy-token-5123674	ssw2Nrd2
+```
+Create and edit that file locally, eg at the location `private/shepherd-registries-auth`, and create the docker secret with
+```
+docker secret create shepherd-registries-auth private/shepherd-registries-auth
+```
+You need to make the secret available to shepherd with the `secrets` key:
+```
+services:
+  app:
+    image: mazzolino/shepherd
+    secrets:
+      - shepherd-registries-auth
+secrets:
+    shepherd-registries-auth:
+      external: true
+```
+You also need to add a label `shepherd.auth.config` to the container to be updated specifying which line of the secret file should be used. The value of that label should be the `id` in the secret file:
+
+```
+    deploy:
+        labels:
+            - shepherd.enable=true
+            - shepherd.auth.config=blog
+```
+
 You can enable connection to insecure private registry by setting the `WITH_INSECURE_REGISTRY` variable.
 
 You can force image deployment whatever the architecture by setting the `WITH_NO_RESOLVE_IMAGE` variable.
