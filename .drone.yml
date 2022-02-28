@@ -1,5 +1,15 @@
 ---
 kind: pipeline
+name: test
+
+steps:
+  - name: shellcheck
+    image: koalaman/shellcheck-alpine:v0.8.0@sha256:7d818fda19f5d8658fbb61b53f106cde88eda4b977b1db916ad9d3ccfa1c3ac6
+    commands:
+      - shellcheck shepherd
+
+---
+kind: pipeline
 name: release
 
 steps:
@@ -48,4 +58,6 @@ trigger:
 
 ---
 kind: signature
-hmac: d065ad11566d347b9bb8185525e687b936332efe07826e6070cee29bca196018
+hmac: 5d296dd4c63d3f6b8d3ffabf0ba4f2f51d3cfacc6d68dd31388d675132742a0d
+
+...

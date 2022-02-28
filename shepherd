@@ -31,10 +31,10 @@ update_services() {
   local name
   local apprise_sidecar_url="${APPRISE_SIDECAR_URL:-}"
 
-  [ $supports_detach_option = true ] && detach_option="--detach=false"
-  [ $supports_registry_auth = true ] && registry_auth="--with-registry-auth"
-  [ $supports_insecure_registry = true ] && insecure_registry_flag="--insecure"
-  [ $supports_no_resolve_image = true ] && no_resolve_image_flag="--no-resolve-image"
+  [ "$supports_detach_option" = true ] && detach_option="--detach=false"
+  [ "$supports_registry_auth" = true ] && registry_auth="--with-registry-auth"
+  [ "$supports_insecure_registry" = true ] && insecure_registry_flag="--insecure"
+  [ "$supports_no_resolve_image" = true ] && no_resolve_image_flag="--no-resolve-image"
 
   if [[ -n "$registry_user" ]]; then
     logger "Trying to login into registry $registry_host"
@@ -47,7 +47,7 @@ update_services() {
       image_with_digest="$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
       image=$(echo "$image_with_digest" | cut -d@ -f1)
 
-      if ! DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $insecure_registry_flag $image > /dev/null; then
+      if ! DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $insecure_registry_flag "$image" > /dev/null; then
         logger "Error updating service $name! Image $image does not exist or it is not available"
       else
         logger "Trying to update service $name with image $image" "true"
@@ -81,11 +81,12 @@ update_services() {
           if [[ "$image_autoclean_limit" != "" ]]; then
             logger "Cleaning up old docker images, leaving last $image_autoclean_limit"
             img_name=$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}' | awk -F':' '{print $1}')
-            image_ids=$(docker images -aq --filter=reference=$img_name)
-            image_ids_count=$(echo $image_ids | wc -w)
+            image_ids=$(docker images -aq --filter=reference="$img_name")
+            image_ids_count=$(echo "$image_ids" | wc -w)
             if [[ $image_ids_count > $image_autoclean_limit ]]; then
               docker container prune -f
-              docker rmi $(echo $image_ids | xargs -n 1 | tail -n $(expr $image_ids_count - $image_autoclean_limit))
+              read -ra images_to_remove < <(echo "$image_ids" | xargs -n 1 | tail -n $(("$image_ids_count" - "$image_autoclean_limit")))
+              docker rmi "${images_to_remove[@]}"
             fi
           fi
         fi
@@ -100,12 +101,12 @@ get_registry_password() {
     if [[ -f "$password_file_path" ]]; then
         cat "$password_file_path"
     else
-        echo "${REGISTRY_PASSWORD}"
+        echo "${REGISTRY_PASSWORD:-}"
     fi
 }
 
 main() {
-  local sleep_time supports_detach_option supports_registry_auth tz verbose image_autoclean_limit ignorelist
+  local sleep_time supports_detach_option supports_registry_auth verbose image_autoclean_limit ignorelist
   local registry_user=""
   local registry_password=""
   local registry_host=""
@@ -117,7 +118,7 @@ main() {
   logger "Timezone set to $TZ"
 
   supports_detach_option=false
-  if [[ "$(server_version)" > "17.05" ]]; then
+  if [[ $(expr "$(server_version)" ">=" "17.05") == "1" ]]; then
     supports_detach_option=true
     logger "Enabling synchronous service updates"
   fi
