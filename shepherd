@@ -108,7 +108,7 @@ get_registry_password() {
 }
 
 main() {
-  local sleep_time supports_detach_option supports_registry_auth verbose image_autoclean_limit ignorelist hostname
+  local sleep_time supports_detach_option supports_registry_auth verbose image_autoclean_limit ignorelist
   local registry_user=""
   local registry_password=""
   local registry_host=""
