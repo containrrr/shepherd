@@ -30,6 +30,8 @@ update_services() {
   local no_resolve_image_flag=""
   local name
   local apprise_sidecar_url="${APPRISE_SIDECAR_URL:-}"
+  local hostname
+  hostname="${HOSTNAME:-$(hostname)}"
 
   [ "$supports_detach_option" = true ] && detach_option="--detach=false"
   [ "$supports_registry_auth" = true ] && registry_auth="--with-registry-auth"
@@ -53,13 +55,13 @@ update_services() {
         logger "Trying to update service $name with image $image" "true"
 
         if ! docker service update "$name" $detach_option $registry_auth $no_resolve_image_flag --image="$image" > /dev/null; then
-          logger "Service $name update failed!"
+          logger "Service $name update failed on $hostname!"
           if [[ "${ROLLBACK_ON_FAILURE+x}" ]]; then
             logger "Rolling $name back"
             docker service update "$name" $detach_option $registry_auth $no_resolve_image_flag --rollback > /dev/null
           fi
           if [[ "$apprise_sidecar_url" != "" ]]; then
-            title="[Shepherd] Service $name update failed"
+            title="[Shepherd] Service $name update failed on $hostname"
             body="$(date) Service $name failed to update to $(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
             curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\"}" "$apprise_sidecar_url"
           fi
@@ -73,7 +75,7 @@ update_services() {
         else
           logger "Service $name was updated!"
           if [[ "$apprise_sidecar_url" != "" ]]; then
-            title="[Shepherd] Service $name updated"
+            title="[Shepherd] Service $name updated on $hostname"
             body="$(date) Service $name was updated from $previousImage to $currentImage"
             curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\"}" "$apprise_sidecar_url"
           fi
