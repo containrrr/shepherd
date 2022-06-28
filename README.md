@@ -29,7 +29,7 @@ A Docker swarm service for automatically updating your services whenever their b
 
 ### Configuration
 
-Shepherd will try to update your services every 5 minutes by default. You can adjust this value using the `SLEEP_TIME` variable.
+Shepherd will try to update your services every 5 minutes by default. You can adjust this value using the `SLEEP_TIME` variable. Alternatively set `CRON_SETTING` to run shepherd at a given time. When `CRON_SETTING` is provided, `SLEEP_TIME` will be ignored.
 
 You can prevent services from being updated by appending them to the `IGNORELIST_SERVICES` variable. This should be a space-separated list of service names.
 
