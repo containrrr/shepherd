@@ -37,6 +37,8 @@ Alternatively you can specify a filter for the services you want updated using t
 
 You can set Shepherd to roll back a service to the previous version if the update fails by setting the `ROLLBACK_ON_FAILURE` variable.
 
+You can control additional parameters for the `docker service update` and `docker service update --rollback` calls using the variables `UPDATE_OPTIONS` and `ROLLBACK_OPTIONS`.
+
 You can enable private registry authentication by setting the `WITH_REGISTRY_AUTH` variable.
 
 If you need to authenticate to a registry (for example in order to get around the [Docker Hub rate limits](https://www.docker.com/increase-rate-limit)), you can set the variable `REGISTRY_USER` and store the password either in a [docker secret](https://docs.docker.com/engine/swarm/secrets/) named `shepherd_registry_password` or in the environment variable `REGISTRY_PASSWORD`. If you are not using Docker Hub but a private registry, set `REGISTRY_HOST` to the hostname of your registry.
@@ -67,6 +69,7 @@ Example:
                         --env IMAGE_AUTOCLEAN_LIMIT="5" \
                         --env RUN_ONCE_AND_EXIT="true" \
                         --env ROLLBACK_ON_FAILURE="true" \
+                        --env UPDATE_OPTIONS="--update-delay=30s" \
                         --env TZ=Europe/Berlin \
                         --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
                         --mount type=bind,source=/root/.docker/config.json,target=/root/.docker/config.json,ro \

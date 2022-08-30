@@ -9,6 +9,8 @@ services:
       SLEEP_TIME: '5m'
       FILTER_SERVICES: ''
       VERBOSE: 'true'
+      #UPDATE_OPTIONS: '--update-delay=30s'
+      #ROLLBACK_OPTIONS: '--rollback-delay=0s'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     deploy:

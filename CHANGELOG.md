@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+**Implemented enhancements:**
+
+- Add support for specifying UPDATE_OPTIONS and ROLLBACK_OPTIONS [\#77](https://github.com/djmaze/shepherd/pull/77) ([moschlar](https://github.com/moschlar))
+
 ## [0.6.0](https://github.com/djmaze/shepherd/tree/0.6.0) (2022-01-12)
 
 [Full Changelog](https://github.com/djmaze/shepherd/compare/0.5.0...0.6.0)
