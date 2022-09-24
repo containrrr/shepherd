@@ -193,7 +193,7 @@ run_main() {
 
 run_crond() {
   mkdir -p /etc/cron.d
-  echo "${CRON_SETTING} BASH_ENV=/save-env /shepherd >> /var/log/shepherd.log" > /etc/cron.d/shepherd
+  echo "${CRON_SETTING:-} BASH_ENV=/save-env /usr/local/bin/shepherd >> /var/log/shepherd.log 2>&1" > /etc/cron.d/shepherd
   chmod 0644 /etc/cron.d/shepherd
   export RUN_ONCE_AND_EXIT='true'
   export CRON_SETTING=''
@@ -205,7 +205,7 @@ run_crond() {
 }
 
 main() {
-  if [[ -z "${CRON_SETTING}" ]]; then
+  if [[ -z "${CRON_SETTING:-}" ]]; then
     run_main "$@"
   else
     run_crond "$@"
