@@ -13,6 +13,18 @@ logger() {
     echo "$(date) $log"
   fi
 }
+
+in_list() {
+  local list="$1"
+  local searched_item="$2"
+
+  for item in $list; do
+    [[ "$item" == "$searched_item" ]] && echo "true"
+  done
+
+  echo "false"
+}
+
 authenticate_to_registries() {
   local config host user password
   if [[ -n "$registry_user" ]]; then
@@ -63,7 +75,7 @@ update_services() {
 
   for name in $(IFS=$'\n' docker service ls --quiet --filter "${FILTER_SERVICES}" --format '{{.Name}}'); do
     local image_with_digest image auth_config config_flag
-    if [[ " $ignorelist " != *" $name "* ]]; then
+    if [[ "$(in_list "$ignorelist" "$name")" == "false" ]]; then
       image_with_digest="$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
       image=$(echo "$image_with_digest" | cut -d@ -f1)
       auth_config=$(docker service inspect "$name" -f '{{index .Spec.Labels "shepherd.auth.config"}}')
