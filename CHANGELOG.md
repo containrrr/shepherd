@@ -1,10 +1,25 @@
 # Changelog
 
-## Unreleased
+## [0.7.0](https://github.com/djmaze/shepherd/tree/0.7.0) (2022-10-03)
+
+[Full Changelog](https://github.com/djmaze/shepherd/compare/0.6.0...0.7.0)
 
 **Implemented enhancements:**
 
-- Add support for specifying UPDATE_OPTIONS and ROLLBACK_OPTIONS [\#77](https://github.com/djmaze/shepherd/pull/77) ([moschlar](https://github.com/moschlar))
+- Add support for specifying UPDATE\_OPTIONS and ROLLBACK\_OPTIONS [\#77](https://github.com/djmaze/shepherd/pull/77) ([moschlar](https://github.com/moschlar))
+- Added hostname to output and the possibility to setup a variable for that. [\#72](https://github.com/djmaze/shepherd/pull/72) ([Betriebsrat](https://github.com/Betriebsrat))
+- support auth to multiple regs in secret file [\#69](https://github.com/djmaze/shepherd/pull/69) ([rbauduin](https://github.com/rbauduin))
+- Add help text and example for setting the timezone [\#68](https://github.com/djmaze/shepherd/pull/68) ([moschlar](https://github.com/moschlar))
+- support docker secrets for registry password retrieval [\#67](https://github.com/djmaze/shepherd/pull/67) ([rbauduin](https://github.com/rbauduin))
+
+**Fixed bugs:**
+
+- Fix ignorelist check [\#79](https://github.com/djmaze/shepherd/pull/79) ([djmaze](https://github.com/djmaze))
+- Fix shellcheck problems [\#70](https://github.com/djmaze/shepherd/pull/70) ([djmaze](https://github.com/djmaze))
+
+**Closed issues:**
+
+- Enhancement: Hostname or custom text for notifications [\#71](https://github.com/djmaze/shepherd/issues/71)
 
 ## [0.6.0](https://github.com/djmaze/shepherd/tree/0.6.0) (2022-01-12)
 
