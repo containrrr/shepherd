@@ -109,6 +109,31 @@ Example:
                         --mount type=bind,source=/root/.docker/config.json,target=/root/.docker/config.json,ro \
                         mazzolino/shepherd
 
+Example (docker-compose or Docker Swarm):
+
+    version: "3"
+    services:
+      shepherd:
+        image: mazzolino/shepherd
+        environment:
+          - SLEEP_TIME=5m
+          - IGNORELIST_SERVICES=shepherd my-other-service
+          - WITH_REGISTRY_AUTH=true
+          - WITH_INSECURE_REGISTRY=true
+          - WITH_NO_RESOLVE_IMAGE=true
+          - APPRISE_SIDECAR_URL=apprise-microservice:5000
+          - IMAGE_AUTOCLEAN_LIMIT=5
+          - RUN_ONCE_AND_EXIT=true
+          - ROLLBACK_ON_FAILURE=true
+          - UPDATE_OPTIONS=--update-delay=30s
+          - TZ=Europe/Berlin
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+        deploy:
+          placement:
+            constraints:
+            - node.role == manager
+
 ## How does it work?
 
 Shepherd just triggers updates by updating the image specification for each service, removing the current digest.
