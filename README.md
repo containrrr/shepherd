@@ -31,6 +31,8 @@ A Docker swarm service for automatically updating your services whenever their b
 
 Shepherd will try to update your services every 5 minutes by default. You can adjust this value using the `SLEEP_TIME` variable.
 
+As an alternative you can set `SLEEP_SCHEDULE` to specify fixed time(s) when the services should be updated. If `SLEEP_SCHEDULE` is set, any value in `SLEEP_TIME` is ignored. `SLEEP_SCHEDULE` has to be a valid unix cron schedule of five fields. Example "0 8,16 * * *" --> every day at 08:00 and 16:00
+
 You can prevent services from being updated by appending them to the `IGNORELIST_SERVICES` variable. This should be a space-separated list of service names.
 
 Alternatively you can specify a filter for the services you want updated using the `FILTER_SERVICES` variable. This can be anything accepted by the filtering flag in `docker service ls`.

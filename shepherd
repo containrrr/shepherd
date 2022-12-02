@@ -145,6 +145,16 @@ get_registry_password() {
     fi
 }
 
+# calculates the seconds to the next run. $SLEEP_SCHEDULE has to be a valid unix cron schedule. 
+# example "0 8,16 * * *" --> every day at 08:00 and 16:00
+sleep_until() { 
+  local now next_update
+  now=$( date +%s )
+  next_update=$( ksh -c "printf \"%(%s)T\" \"${SLEEP_SCHEDULE}\"" ) 
+  sleep_time=$(( next_update - now ))
+  logger "Next update at $( date -d @$(( next_update )) )" "true"
+}
+
 main() {
   local sleep_time supports_detach_option supports_registry_auth verbose image_autoclean_limit ignorelist
   local registry_user=""
@@ -196,7 +206,12 @@ main() {
   else
     while true; do
       update_services "$ignorelist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry" "$supports_no_resolve_image" "$image_autoclean_limit" "$registry_user" "$registry_password" "$registry_host"
-      logger "Sleeping $sleep_time before next update" "true"
+      if [[ ${SLEEP_SCHEDULE+x} ]]; then
+        sleep_until
+        logger "Sleeping ${sleep_time} seconds before next update" "true"
+      else
+        logger "Sleeping ${sleep_time} before next update" "true"
+      fi
       sleep "$sleep_time"
     done
   fi
