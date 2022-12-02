@@ -149,7 +149,7 @@ get_registry_password() {
 # examples: '23' --> every day at 23:00:00; '13:30:10 2' --> every third day at 13:30:10; 
 sleep_until() { 
   local timezone_offset now
-  local -a hours_minutes_seconds_days=(${SLEEP_UNTIL//:/ })
+  local -a hours_minutes_seconds_days="(${SLEEP_UNTIL//:/ })"
   printf -v now '%(%s)T' -1
   printf -v timezone_offset '%(%z)T' "$now"
   local expr
