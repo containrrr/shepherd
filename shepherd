@@ -151,13 +151,13 @@ sleep_until() {
   local timezone_offset now
   local -a hours_minutes_seconds_days=(${SLEEP_UNTIL//:/ })
   printf -v now '%(%s)T' -1
-  printf -v timezone_offset '%(%z)T' $now
-  timezone_offset=$(( 0${timezone_offset:0:1} ( 10#${timezone_offset:1:2} * 3600 + 10#${timezone_offset: -2} * 60 )))
-  sleep_time=$(((( 86400 + ( now - now % 86400 ) + \
-             10#$hours_minutes_seconds_days * 3600 + \
-             10#${hours_minutes_seconds_days[1]:-0} * 60 + \
-             10#${hours_minutes_seconds_days[2]:-0} - timezone_offset - now ) % 86400 ) + \
-             10#${hours_minutes_seconds_days[3]:-0} * 86400 ))
+  printf -v timezone_offset '%(%z)T' "$now"
+  local expr
+  expr="0${timezone_offset:0:1} ( 10#${timezone_offset:1:2} * 3600 + 10#${timezone_offset: -2} * 60 )"
+  timezone_offset=$(( expr ))
+  echo "tz_off: $timezone_offset"
+  expr="(( 86400 + ( now - now % 86400 ) + 10#${hours_minutes_seconds_days} * 3600 + 10#${hours_minutes_seconds_days[1]:-0} * 60 + 10#${hours_minutes_seconds_days[2]:-0} - timezone_offset - now ) % 86400 ) +  10#${hours_minutes_seconds_days[3]:-0} * 86400"
+  sleep_time=$(( expr ))
   logger "$(printf 'Next update at %(%c)T' $((now+sleep_time)))" "true"
 }
 
