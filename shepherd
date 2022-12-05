@@ -151,12 +151,18 @@ sleep_until() {
   local now next_update
   now=$( date +%s )
   next_update=$( ksh -c "printf \"%(%s)T\" \"${SLEEP_SCHEDULE}\"" ) 
-  sleep_time=$(( next_update - now ))
-  logger "Next update at $( date -d @$(( next_update )) )" "true"
+  schedule_sleep_time=$(( next_update - now ))
+  if (( schedule_sleep_time > 0 )); then
+    logger "Next update at $( date -d @$(( next_update )) )" "true"
+  else
+    logger "Calculated sleep time from schedule not valid: $schedule_sleep_time"
+    logger "Defaulting to SLEEP_TIME: $sleep_time"
+    schedule_sleep_time=$sleep_time
+  fi
 }
 
 main() {
-  local sleep_time supports_detach_option supports_registry_auth verbose image_autoclean_limit ignorelist
+  local sleep_time schedule_sleep_time supports_detach_option supports_registry_auth verbose image_autoclean_limit ignorelist
   local registry_user=""
   local registry_password=""
   local registry_host=""
@@ -208,11 +214,12 @@ main() {
       update_services "$ignorelist" "$supports_detach_option" "$supports_registry_auth" "$supports_insecure_registry" "$supports_no_resolve_image" "$image_autoclean_limit" "$registry_user" "$registry_password" "$registry_host"
       if [[ ${SLEEP_SCHEDULE+x} ]]; then
         sleep_until
-        logger "Sleeping ${sleep_time} seconds before next update" "true"
+        logger "Sleeping ${schedule_sleep_time} seconds before next update" "true"
+        sleep "${schedule_sleep_time}"
       else
         logger "Sleeping ${sleep_time} before next update" "true"
+        sleep "$sleep_time"
       fi
-      sleep "$sleep_time"
     done
   fi
 }
