@@ -1,12 +1,12 @@
 FROM mazzolino/docker:20 AS builder
 
-RUN apk add --update --no-cache git build-base
+RUN apk add --update --no-cache bash build-base git
 
 WORKDIR /git/
 RUN git clone --depth 1 --branch v1.0.4 https://github.com/ksh93/ksh.git
 
 ENV CCFLAGS='-D_BSD_SOURCE -D_DEFAULT_SOURCE'
-RUN ksh/bin/package make
+RUN ksh/bin/package make SHELL=/bin/bash
 RUN ksh/bin/package install /ksh-install/ ksh
 
 FROM mazzolino/docker:20
