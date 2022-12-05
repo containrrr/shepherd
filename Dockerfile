@@ -3,7 +3,7 @@ FROM mazzolino/docker:20 AS builder
 RUN apk add --update --no-cache git build-base
 
 WORKDIR /git/
-RUN git clone https://github.com/ksh93/ksh.git
+RUN git clone --depth 1 --branch v1.0.4 https://github.com/ksh93/ksh.git
 
 ENV CCFLAGS='-D_BSD_SOURCE -D_DEFAULT_SOURCE'
 RUN ksh/bin/package make
