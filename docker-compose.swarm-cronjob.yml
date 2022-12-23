@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+  app:
+    build: .
+    image: mazzolino/shepherd
+    environment:
+      TZ: 'US/Eastern'
+      FILTER_SERVICES: ''
+      IGNORELIST_SERVICES: "test"
+      RUN_ONCE_AND_EXIT: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    deploy:
+      replicas: 0
+      restart_policy:
+        condition: none
+      labels:
+        - swarm.cronjob.enable=true
+        # Start service every day at midnight
+        - swarm.cronjob.schedule=0 0 0 * * *
+        - swarm.cronjob.skip-running=true
+      placement:
+        constraints:
+        - node.role == manager
+
+  scheduler:
+    image: crazymax/swarm-cronjob:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - "TZ=Europe/Berlin"
+      - "LOG_LEVEL=info"
+      - "LOG_JSON=false"
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager

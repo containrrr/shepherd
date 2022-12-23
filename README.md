@@ -12,7 +12,7 @@ A Docker swarm service for automatically updating your services whenever their b
                           --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
                           mazzolino/shepherd
 
-## Or with docker-compose
+### Or with Docker Compose
 
     version: "3"
     services:
@@ -27,7 +27,7 @@ A Docker swarm service for automatically updating your services whenever their b
             constraints:
             - node.role == manager
 
-### Configuration
+## Configuration
 
 Shepherd will try to update your services every 5 minutes by default. You can adjust this value using the `SLEEP_TIME` variable.
 
@@ -108,6 +108,15 @@ Example:
                         --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
                         --mount type=bind,source=/root/.docker/config.json,target=/root/.docker/config.json,ro \
                         mazzolino/shepherd
+
+## Running on a cron schedule
+
+When running shepherd as described with a `SLEEP_TIME`, the de facto running times will drift the longer the container is running. If you want to run shepherd on a fixed schedule instead, it is recommended to pair it with [swarm-cronjob](https://github.com/crazy-max/swarm-cronjob):
+
+1. Create a *swarm-cronjob* service [as described in its documentation](https://crazymax.dev/swarm-cronjob/install/docker/#usage).
+2. Set `RUN_ONCE_AND_EXIT` to `true`, `replicas` to `0` and `restart_policy` to `condition: none`. Add docker labels for the schedule.
+
+See [docker-compose.swarm-cronjob.yml](docker-compose.swarm-cronjob.yml) for a full stack example which includes both shepherd as well as swarm-cronjob.
 
 ## How does it work?
 
