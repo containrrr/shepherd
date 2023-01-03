@@ -7,9 +7,9 @@ server_version() {
 
 logger() {
   local log="$1"
-  local is_verbose_log="${2:-false}"
+  local is_verbose_log="${2:-${VERBOSE:-true}}"
 
-  if [[ "$is_verbose_log" == "true" && "$verbose" == "true" || "$is_verbose_log" == "false" ]]; then
+  if [[ "$is_verbose_log" == "true" ]]; then
     echo "$(date) $log"
   fi
 }
@@ -146,13 +146,12 @@ get_registry_password() {
 }
 
 main() {
-  local sleep_time supports_detach_option supports_registry_auth verbose image_autoclean_limit ignorelist
+  local sleep_time supports_detach_option supports_registry_auth image_autoclean_limit ignorelist
   local registry_user=""
   local registry_password=""
   local registry_host=""
   ignorelist="${IGNORELIST_SERVICES:-}"
   sleep_time="${SLEEP_TIME:-5m}"
-  verbose="${VERBOSE:-true}"
   image_autoclean_limit="${IMAGE_AUTOCLEAN_LIMIT:-}"
 
   logger "Timezone set to $TZ"
