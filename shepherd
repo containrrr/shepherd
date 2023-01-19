@@ -113,15 +113,16 @@ update_services() {
         continue # continue with next service
       fi
 
-      previousImage=$(docker service inspect "$name" -f '{{.PreviousSpec.TaskTemplate.ContainerSpec.Image}}')
-      currentImage=$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')
-      if [ "$previousImage" == "$currentImage" ]; then
+      local previous_image current_image
+      previous_image=$(docker service inspect "$name" -f '{{.PreviousSpec.TaskTemplate.ContainerSpec.Image}}')
+      current_image=$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')
+      if [ "$previous_image" == "$current_image" ]; then
         logger "No updates to service $name!" "true"
       else
         logger "Service $name was updated!"
         if [[ "$apprise_sidecar_url" != "" ]]; then
           title="[Shepherd] Service $name updated on $hostname"
-          body="$(date) Service $name was updated from $previousImage to $currentImage"
+          body="$(date) Service $name was updated from $previous_image to $current_image"
           curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\"}" "$apprise_sidecar_url"
         fi
 
