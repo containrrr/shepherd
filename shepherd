@@ -34,8 +34,8 @@ authenticate_to_registries() {
   if [[ -n "${REGISTRIES_FILE:-""}" ]]; then
     while IFS=$'\t' read -r -a reg_info; do
       # skip comments and invalid lines
-      if [[ "${reg_info[0]}" =~ "#" ]] || [[ ${#reg_info[@]} -ne 4 ]] ; then
-          continue
+      if [[ "${reg_info[0]}" =~ "#" ]] || [[ ${#reg_info[@]} -ne 4 ]]; then
+        continue
       fi
       config="${reg_info[0]}"
       host="${reg_info[1]}"
@@ -73,61 +73,68 @@ update_services() {
 
   authenticate_to_registries
 
+  # iterate over all services
   for name in $(IFS=$'\n' docker service ls --quiet --filter "${FILTER_SERVICES}" --format '{{.Name}}'); do
+
+    # skip ignored services
+    if [[ "$(in_list "$ignorelist" "$name")" != "false" ]]; then
+      continue # continue with next service
+    fi
+
     local image_with_digest image auth_config config_flag
-    if [[ "$(in_list "$ignorelist" "$name")" == "false" ]]; then
-      image_with_digest="$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
-      image=$(echo "$image_with_digest" | cut -d@ -f1)
-      auth_config=$(docker service inspect "$name" -f '{{index .Spec.Labels "shepherd.auth.config"}}')
-      if [[ -z "$auth_config" ]]; then
-          config_flag=()
-      else
-          config_flag=(--config "$auth_config")
+
+    image_with_digest="$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
+    image=$(echo "$image_with_digest" | cut -d@ -f1)
+    auth_config=$(docker service inspect "$name" -f '{{index .Spec.Labels "shepherd.auth.config"}}')
+    if [[ -z "$auth_config" ]]; then
+      config_flag=()
+    else
+      config_flag=(--config "$auth_config")
+    fi
+
+    if ! DOCKER_CLI_EXPERIMENTAL=enabled docker "${config_flag[@]}" manifest inspect $insecure_registry_flag "$image" > /dev/null; then
+      logger "Error updating service $name! Image $image does not exist or it is not available"
+    else
+      logger "Trying to update service $name with image $image" "true"
+
+      # shellcheck disable=SC2086
+      if ! docker "${config_flag[@]}" service update "$name" $detach_option $registry_auth $no_resolve_image_flag ${UPDATE_OPTIONS} --image="$image" > /dev/null; then
+        logger "Service $name update failed on $hostname!"
+        if [[ "${ROLLBACK_ON_FAILURE+x}" ]]; then
+          logger "Rolling $name back"
+          # shellcheck disable=SC2086
+          docker "${config_flag[@]}" service update "$name" $detach_option $registry_auth $no_resolve_image_flag ${ROLLBACK_OPTIONS} --rollback > /dev/null
+        fi
+        if [[ "$apprise_sidecar_url" != "" ]]; then
+          title="[Shepherd] Service $name update failed on $hostname"
+          body="$(date) Service $name failed to update to $(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
+          curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\"}" "$apprise_sidecar_url"
+        fi
+        continue # continue with next service
       fi
 
-      if ! DOCKER_CLI_EXPERIMENTAL=enabled docker "${config_flag[@]}" manifest inspect $insecure_registry_flag "$image" > /dev/null; then
-        logger "Error updating service $name! Image $image does not exist or it is not available"
+      local previous_image current_image
+      previous_image=$(docker service inspect "$name" -f '{{.PreviousSpec.TaskTemplate.ContainerSpec.Image}}')
+      current_image=$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')
+      if [ "$previous_image" == "$current_image" ]; then
+        logger "No updates to service $name!" "true"
       else
-        logger "Trying to update service $name with image $image" "true"
-
-	# shellcheck disable=SC2086
-        if ! docker "${config_flag[@]}" service update "$name" $detach_option $registry_auth $no_resolve_image_flag ${UPDATE_OPTIONS} --image="$image" > /dev/null; then
-          logger "Service $name update failed on $hostname!"
-          if [[ "${ROLLBACK_ON_FAILURE+x}" ]]; then
-            logger "Rolling $name back"
-	    # shellcheck disable=SC2086
-            docker "${config_flag[@]}" service update "$name" $detach_option $registry_auth $no_resolve_image_flag ${ROLLBACK_OPTIONS} --rollback > /dev/null
-          fi
-          if [[ "$apprise_sidecar_url" != "" ]]; then
-            title="[Shepherd] Service $name update failed on $hostname"
-            body="$(date) Service $name failed to update to $(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
-            curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\"}" "$apprise_sidecar_url"
-          fi
-          continue    # continue with next service
+        logger "Service $name was updated!"
+        if [[ "$apprise_sidecar_url" != "" ]]; then
+          title="[Shepherd] Service $name updated on $hostname"
+          body="$(date) Service $name was updated from $previous_image to $current_image"
+          curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\"}" "$apprise_sidecar_url"
         fi
 
-        previousImage=$(docker service inspect "$name" -f '{{.PreviousSpec.TaskTemplate.ContainerSpec.Image}}')
-        currentImage=$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')
-        if [ "$previousImage" == "$currentImage" ]; then
-          logger "No updates to service $name!" "true"
-        else
-          logger "Service $name was updated!"
-          if [[ "$apprise_sidecar_url" != "" ]]; then
-            title="[Shepherd] Service $name updated on $hostname"
-            body="$(date) Service $name was updated from $previousImage to $currentImage"
-            curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\"}" "$apprise_sidecar_url"
-          fi
-
-          if [[ "$image_autoclean_limit" != "" ]]; then
-            logger "Cleaning up old docker images, leaving last $image_autoclean_limit"
-            img_name=$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}' | awk -F':' '{print $1}')
-            image_ids=$(docker images -aq --filter=reference="$img_name")
-            image_ids_count=$(echo "$image_ids" | wc -w)
-            if [[ $image_ids_count > $image_autoclean_limit ]]; then
-              docker container prune -f
-              read -ra images_to_remove < <(echo "$image_ids" | xargs -n 1 | tail -n $(("$image_ids_count" - "$image_autoclean_limit")))
-              docker rmi "${images_to_remove[@]}"
-            fi
+        if [[ "$image_autoclean_limit" != "" ]]; then
+          logger "Cleaning up old docker images, leaving last $image_autoclean_limit"
+          img_name=$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}' | awk -F':' '{print $1}')
+          image_ids=$(docker images -aq --filter=reference="$img_name")
+          image_ids_count=$(echo "$image_ids" | wc -w)
+          if [[ $image_ids_count > $image_autoclean_limit ]]; then
+            docker container prune -f
+            read -ra images_to_remove < <(echo "$image_ids" | xargs -n 1 | tail -n $(("$image_ids_count" - "$image_autoclean_limit")))
+            docker rmi "${images_to_remove[@]}"
           fi
         fi
       fi
@@ -137,12 +144,12 @@ update_services() {
 
 # retrieve registry password from docker secrets or environment, in this order
 get_registry_password() {
-    local password_file_path="/run/secrets/shepherd_registry_password"
-    if [[ -f "$password_file_path" ]]; then
-        cat "$password_file_path"
-    else
-        echo "${REGISTRY_PASSWORD:-}"
-    fi
+  local password_file_path="/run/secrets/shepherd_registry_password"
+  if [[ -f "$password_file_path" ]]; then
+    cat "$password_file_path"
+  else
+    echo "${REGISTRY_PASSWORD:-}"
+  fi
 }
 
 main() {

@@ -1,0 +1,31 @@
+# https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions
+name: Build
+
+on:
+  push:
+    branches:
+    - '**'
+    tags-ignore:
+    - '**'
+    paths-ignore:
+    - '**/*.md'
+    - '.github/*.yml'
+  pull_request:
+  workflow_dispatch:
+    # https://github.blog/changelog/2020-07-06-github-actions-manual-triggers-with-workflow_dispatch/
+
+jobs:
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Git Checkout
+      uses: actions/checkout@v3 #https://github.com/actions/checkout
+
+    - name: Install shellcheck
+      run: sudo apt-get install -y bash shellcheck
+
+    - name: Analyse with shellcheck
+      run: |
+        shellcheck -V
+        shellcheck --shell bash shepherd
