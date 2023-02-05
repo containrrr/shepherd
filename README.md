@@ -57,11 +57,13 @@ Create and edit that file locally, eg at the location `private/shepherd-registri
 ```
 docker secret create shepherd-registries-auth private/shepherd-registries-auth
 ```
-You need to make the secret available to shepherd with the `secrets` key:
+You need to make the secret available to shepherd with the `secrets` key, and pass the secret file to the `REGISTRIES_FILE` variable:
 ```
 services:
   app:
     image: mazzolino/shepherd
+    environment:
+      REGISTRIES_FILE: /var/run/secrets/shepherd-registries-auth
     secrets:
       - shepherd-registries-auth
 secrets:
