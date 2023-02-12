@@ -5,6 +5,12 @@
 
 A Docker swarm service for automatically updating your services whenever their base image is refreshed.
 
+## Looking for a new maintainer
+
+Personally, I (@djmaze) haven't been using shepherd for a long time now. (I am pursueing a different, infrastructure-as-code based approach which I might blog about in the near future.)
+
+That's a bad precondition for maintaining a project. So if there is anyone who is still actively using it (and preferably already demonstrated their ability to contribute to this project), please step up and contact me. See [issue #96](https://github.com/djmaze/shepherd/issues/96).
+
 ## Usage
 
     docker service create --name shepherd \
