@@ -98,7 +98,7 @@ update_services() {
       logger "Trying to update service $name with image $image" "true"
 
       # shellcheck disable=SC2086
-      if ! docker "${config_flag[@]}" service update "$name" $detach_option $registry_auth $no_resolve_image_flag ${UPDATE_OPTIONS} --image="$image" > /dev/null; then
+      if ! timeout "${TIMEOUT:-300}" docker "${config_flag[@]}" service update "$name" $detach_option $registry_auth $no_resolve_image_flag ${UPDATE_OPTIONS} --image="$image" > /dev/null; then
         logger "Service $name update failed on $hostname!"
         if [[ "${ROLLBACK_ON_FAILURE+x}" ]]; then
           logger "Rolling $name back"
