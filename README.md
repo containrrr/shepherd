@@ -33,6 +33,8 @@ That's a bad precondition for maintaining a project. So if there is anyone who i
             constraints:
             - node.role == manager
 
+See the example [docker-compose.yml](docker-compose.yml) and some more compose configs in the [examples](examples) folder.
+
 ## Configuration
 
 Shepherd will try to update your services every 5 minutes by default. You can adjust this value using the `SLEEP_TIME` variable.
@@ -89,7 +91,7 @@ You can enable connection to insecure private registry by setting the `WITH_INSE
 
 You can force image deployment whatever the architecture by setting the `WITH_NO_RESOLVE_IMAGE` variable.
 
-You can enable notifications on service update with apprise, using the [apprise microservice](https://github.com/djmaze/apprise-microservice) and the `APPRISE_SIDECAR_URL` variable. See the file [docker-compose.apprise.yml](docker-compose.apprise.yml) for an example.
+You can enable notifications on service update with apprise, using the [apprise microservice](https://github.com/djmaze/apprise-microservice) and the `APPRISE_SIDECAR_URL` variable. See the file [docker-compose.apprise.yml](examples/docker-compose.apprise.yml) for an example.
 
 You can enable old image autocleaning on service update by setting the `IMAGE_AUTOCLEAN_LIMIT` variable.
 
@@ -124,7 +126,7 @@ When running shepherd as described with a `SLEEP_TIME`, the de facto running tim
 1. Create a *swarm-cronjob* service [as described in its documentation](https://crazymax.dev/swarm-cronjob/install/docker/#usage).
 2. Set `RUN_ONCE_AND_EXIT` to `true`, `replicas` to `0` and `restart_policy` to `condition: none`. Add docker labels for the schedule.
 
-See [docker-compose.swarm-cronjob.yml](docker-compose.swarm-cronjob.yml) for a full stack example which includes both shepherd as well as swarm-cronjob.
+See [docker-compose.swarm-cronjob.yml](examples/docker-compose.swarm-cronjob.yml) for a full stack example which includes both shepherd as well as swarm-cronjob.
 
 ## How does it work?
 
