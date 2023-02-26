@@ -2,7 +2,6 @@ version: "3"
 
 services:
   app:
-    build: .
     image: mazzolino/shepherd
     environment:
       APPRISE_SIDECAR_URL: notify:5000
