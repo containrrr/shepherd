@@ -45,7 +45,7 @@ You can set Shepherd to roll back a service to the previous version if the updat
 
 You can control additional parameters for the `docker service update` and `docker service update --rollback` calls using the variables `UPDATE_OPTIONS` and `ROLLBACK_OPTIONS`.
 
-If the `docker service update` takes too long then it will be killed after 5 minutes by default. YOu can adjust this value using the `TIMEOUT` variable.
+If the `docker service update` takes too long then it will be killed after 5 minutes by default. You can adjust this value using the `TIMEOUT` variable.
 
 You can enable private registry authentication by setting the `WITH_REGISTRY_AUTH` variable.
 
