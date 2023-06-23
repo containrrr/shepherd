@@ -97,6 +97,11 @@ update_services() {
     else
       logger "Trying to update service $name with image $image" "true"
 
+      tasks_num=`docker service ls | grep "$name" | awk '{print $4}'`
+      if [[ $tasks_num = 0/* ]]; then
+        detach_option="--detach=true"
+      fi
+
       # shellcheck disable=SC2086
       if ! timeout "${TIMEOUT:-300}" docker "${config_flag[@]}" service update "$name" $detach_option $registry_auth $no_resolve_image_flag ${UPDATE_OPTIONS} --image="$image" > /dev/null; then
         logger "Service $name update failed on $hostname!"
