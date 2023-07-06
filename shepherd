@@ -97,7 +97,7 @@ update_services() {
     else
       logger "Trying to update service $name with image $image" "true"
 
-      num_tasks=$(docker service ls | grep "$name" | awk '{print $4}')
+      num_tasks=$(docker service ls -f "name=$name" | awk 'NR==2{print $4}')
       if [[ $num_tasks = 0/* ]]; then
         detach_option="--detach=true"
       fi
