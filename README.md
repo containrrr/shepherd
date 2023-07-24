@@ -83,9 +83,9 @@ You also need to add a label `shepherd.auth.config` to the container to be updat
             - shepherd.auth.config=blog
 ```
 
-You can enable connection to insecure private registry by setting the `WITH_INSECURE_REGISTRY` variable.
+You can enable connection to insecure private registry by setting the `WITH_INSECURE_REGISTRY` variable to `true`.
 
-You can force image deployment whatever the architecture by setting the `WITH_NO_RESOLVE_IMAGE` variable.
+You can prevent pulling images from the registry by setting the `WITH_NO_RESOLVE_IMAGE` variable to `true`.
 
 You can enable notifications on service update with apprise, using the [apprise microservice](https://github.com/djmaze/apprise-microservice) and the `APPRISE_SIDECAR_URL` variable. See the file [docker-compose.apprise.yml](examples/docker-compose.apprise.yml) for an example.
 
