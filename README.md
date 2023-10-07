@@ -1,7 +1,7 @@
 # Shepherd
 
-[![Build Status](https://ci.strahlungsfrei.de/api/badges/djmaze/shepherd/status.svg)](https://ci.strahlungsfrei.de/djmaze/shepherd)
-[![Docker Stars](https://img.shields.io/docker/stars/mazzolino/shepherd.svg)](https://hub.docker.com/r/mazzolino/shepherd/) [![Docker Pulls](https://img.shields.io/docker/pulls/mazzolino/shepherd.svg)](https://hub.docker.com/r/mazzolino/shepherd/)
+[![Build](https://github.com/containrrr/shepherd/actions/workflows/build.yml/badge.svg)](https://github.com/containrrr/shepherd/actions/workflows/build.yml)
+[![Docker Stars](https://img.shields.io/docker/stars/containrrr/shepherd.svg)](https://hub.docker.com/r/containrrr/shepherd/) [![Docker Pulls](https://img.shields.io/docker/pulls/containrrr/shepherd.svg)](https://hub.docker.com/r/containrrr/shepherd/)
 
 A Docker swarm service for automatically updating your services whenever their base image is refreshed.
 
@@ -10,7 +10,7 @@ A Docker swarm service for automatically updating your services whenever their b
     docker service create --name shepherd \
                           --constraint "node.role==manager" \
                           --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
-                          mazzolino/shepherd
+                          containrrr/shepherd
 
 ### Or with Docker Compose
 
@@ -19,7 +19,7 @@ A Docker swarm service for automatically updating your services whenever their b
       ...
       shepherd:
         build: .
-        image: mazzolino/shepherd
+        image: containrrr/shepherd
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
         deploy:
@@ -65,7 +65,7 @@ You need to make the secret available to shepherd with the `secrets` key, and pa
 ```
 services:
   app:
-    image: mazzolino/shepherd
+    image: containrrr/shepherd
     environment:
       REGISTRIES_FILE: /var/run/secrets/shepherd-registries-auth
     secrets:
@@ -113,7 +113,7 @@ Example:
                         --env TZ=Europe/Berlin \
                         --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
                         --mount type=bind,source=/root/.docker/config.json,target=/root/.docker/config.json,ro \
-                        mazzolino/shepherd
+                        containrrr/shepherd
 
 ## Running on a cron schedule
 

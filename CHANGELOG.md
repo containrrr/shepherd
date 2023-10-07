@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.8.0](https://github.com/containrrr/shepherd/tree/1.8.0) (UNRELEASED)
+
+[Full Changelog](https://github.com/containrrr/shepherd/compare/0.7.0...1.8.0)
+
+**Breaking changes:**
+
+- The docker image registry location has been changed to the containrrr organisation:
+  `containrrr/shepherd`
+
+**Implemented enhancements:**
+
+-
+
+**Fixed bugs:**
+
+-
+
+**Closed issues:**
+
+-
+
 ## [0.7.0](https://github.com/djmaze/shepherd/tree/0.7.0) (2022-10-03)
 
 [Full Changelog](https://github.com/djmaze/shepherd/compare/0.6.0...0.7.0)
