@@ -1,4 +1,4 @@
-image: mazzolino/shepherd:{{#if build.tag}}{{trimPrefix "v" build.tag}}{{else}}latest{{/if}}
+image: containrrr/shepherd:{{#if build.tag}}{{trimPrefix "v" build.tag}}{{else}}latest{{/if}}
 {{#if build.tags}}
 tags:
 {{#each build.tags}}
@@ -7,17 +7,17 @@ tags:
 {{/if}}
 manifests:
   -
-    image: mazzolino/shepherd:{{#if build.tag}}{{trimPrefix "v" build.tag}}-{{/if}}amd64
+    image: containrrr/shepherd:{{#if build.tag}}{{trimPrefix "v" build.tag}}-{{/if}}amd64
     platform:
       architecture: amd64
       os: linux
   -
-    image: mazzolino/shepherd:{{#if build.tag}}{{trimPrefix "v" build.tag}}-{{/if}}arm
+    image: containrrr/shepherd:{{#if build.tag}}{{trimPrefix "v" build.tag}}-{{/if}}arm
     platform:
       architecture: arm
       os: linux
   -
-    image: mazzolino/shepherd:{{#if build.tag}}{{trimPrefix "v" build.tag}}-{{/if}}arm64
+    image: containrrr/shepherd:{{#if build.tag}}{{trimPrefix "v" build.tag}}-{{/if}}arm64
     platform:
       architecture: arm64
       os: linux
