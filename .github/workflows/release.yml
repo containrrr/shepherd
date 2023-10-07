@@ -75,6 +75,14 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # Update Docker Hub repository description from README.md
+      # https://github.com/peter-evans/dockerhub-description
+      - name: Update docker hub description
+        uses: peter-evans/dockerhub-description@v3.4.2
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
       # https://github.com/sigstore/cosign
       - name: Sign the published Docker image
         # This step uses the identity token to provision an ephemeral certificate
