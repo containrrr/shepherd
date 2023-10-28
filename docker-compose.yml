@@ -3,7 +3,7 @@ version: "3"
 services:
   app:
     build: .
-    image: containrrr/shepherd
+    image: containrrr/shepherd:master
     environment:
       TZ: 'US/Eastern'
       SLEEP_TIME: '5m'
