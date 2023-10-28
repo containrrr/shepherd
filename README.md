@@ -10,7 +10,7 @@ A Docker swarm service for automatically updating your services whenever their b
     docker service create --name shepherd \
                           --constraint "node.role==manager" \
                           --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
-                          containrrr/shepherd
+                          containrrr/shepherd:master
 
 ### Or with Docker Compose
 
@@ -19,7 +19,7 @@ A Docker swarm service for automatically updating your services whenever their b
       ...
       shepherd:
         build: .
-        image: containrrr/shepherd
+        image: containrrr/shepherd:master
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
         deploy:
@@ -65,7 +65,7 @@ You need to make the secret available to shepherd with the `secrets` key, and pa
 ```
 services:
   app:
-    image: containrrr/shepherd
+    image: containrrr/shepherd:master
     environment:
       REGISTRIES_FILE: /var/run/secrets/shepherd-registries-auth
     secrets:
@@ -113,7 +113,7 @@ Example:
                         --env TZ=Europe/Berlin \
                         --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
                         --mount type=bind,source=/root/.docker/config.json,target=/root/.docker/config.json,ro \
-                        containrrr/shepherd
+                        containrrr/shepherd:master
 
 ## Running on a cron schedule
 
