@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.8.0](https://github.com/containrrr/shepherd/tree/1.8.0) (UNRELEASED)
+## [1.8.0](https://github.com/containrrr/shepherd/tree/1.8.0) (2023-10-30)
 
 [Full Changelog](https://github.com/containrrr/shepherd/compare/0.7.0...1.8.0)
 
@@ -11,15 +11,38 @@
 
 **Implemented enhancements:**
 
--
+- armhf support [\#108](https://github.com/containrrr/shepherd/issues/108)
+- Switch to official docker image v24 [\#107](https://github.com/containrrr/shepherd/pull/107) ([djmaze](https://github.com/djmaze))
+- Restrict runtime of "docker service update" using "timeout" [\#98](https://github.com/containrrr/shepherd/pull/98) ([fooflington](https://github.com/fooflington))
+- Add example for usage with swarm-cronjob [\#89](https://github.com/containrrr/shepherd/pull/89) ([djmaze](https://github.com/djmaze))
 
 **Fixed bugs:**
 
--
+- Can't update some services: no such manifest [\#105](https://github.com/containrrr/shepherd/issues/105)
+- Service gets stuck when calling "docker service update" and won't progress [\#97](https://github.com/containrrr/shepherd/issues/97)
+- fix: docker service update with `--detach=false` hangs on services wi… [\#104](https://github.com/containrrr/shepherd/pull/104) ([AliRezaBeitari](https://github.com/AliRezaBeitari))
+- Fix defunc VERBOSE handling [\#91](https://github.com/containrrr/shepherd/pull/91) ([sebthom](https://github.com/sebthom))
 
 **Closed issues:**
 
--
+- How does it determine if there is an update or not? [\#111](https://github.com/containrrr/shepherd/issues/111)
+- Looking for a new maintainer [\#96](https://github.com/containrrr/shepherd/issues/96)
+- New OCI manifest issue [\#92](https://github.com/containrrr/shepherd/issues/92)
+- Run service update at a fixed time [\#88](https://github.com/containrrr/shepherd/issues/88)
+- docker swarm 20.10.12 | "docker service update" requires exactly 1 argument. [\#83](https://github.com/containrrr/shepherd/issues/83)
+- Error updating service, does not exist or it is not available when using a duplicate registry [\#78](https://github.com/containrrr/shepherd/issues/78)
+
+**Merged pull requests:**
+
+- Add apprise type and additional error notification [\#118](https://github.com/containrrr/shepherd/pull/118) ([andyloree](https://github.com/andyloree))
+- Rename image in docs [\#114](https://github.com/containrrr/shepherd/pull/114) ([moschlar](https://github.com/moschlar))
+- Fix release workflow [\#113](https://github.com/containrrr/shepherd/pull/113) ([moschlar](https://github.com/moschlar))
+- Update README.md [\#103](https://github.com/containrrr/shepherd/pull/103) ([andrew-dixon](https://github.com/andrew-dixon))
+- ci: add basic github actions for build/release [\#101](https://github.com/containrrr/shepherd/pull/101) ([piksel](https://github.com/piksel))
+- correct misleading description of WITH\_NO\_RESOLVE\_IMAGE [\#100](https://github.com/containrrr/shepherd/pull/100) ([alex-vg](https://github.com/alex-vg))
+- Move example configs to their own folder [\#99](https://github.com/containrrr/shepherd/pull/99) ([djmaze](https://github.com/djmaze))
+- Add documentation about `REGISTRIES_FILE` [\#94](https://github.com/containrrr/shepherd/pull/94) ([tito](https://github.com/tito))
+- Minor refactoring [\#90](https://github.com/containrrr/shepherd/pull/90) ([sebthom](https://github.com/sebthom))
 
 ## [0.7.0](https://github.com/djmaze/shepherd/tree/0.7.0) (2022-10-03)
 
