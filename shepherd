@@ -94,6 +94,11 @@ update_services() {
 
     if ! DOCKER_CLI_EXPERIMENTAL=enabled docker "${config_flag[@]}" manifest inspect $insecure_registry_flag "$image" > /dev/null; then
       logger "Error updating service $name! Image $image does not exist or it is not available"
+      if [[ "$apprise_sidecar_url" != "" ]]; then
+        title="[Shepherd] Error updating service $name"
+        body="$(date) Service $name Image $image does not exist or it is not available"
+        curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\", \"type\": \"failure\"}" "$apprise_sidecar_url"
+      fi
     else
       logger "Trying to update service $name with image $image" "true"
 
@@ -113,7 +118,7 @@ update_services() {
         if [[ "$apprise_sidecar_url" != "" ]]; then
           title="[Shepherd] Service $name update failed on $hostname"
           body="$(date) Service $name failed to update to $(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')"
-          curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\"}" "$apprise_sidecar_url"
+          curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\", \"type\": \"failure\"}" "$apprise_sidecar_url"
         fi
         continue # continue with next service
       fi
@@ -128,7 +133,7 @@ update_services() {
         if [[ "$apprise_sidecar_url" != "" ]]; then
           title="[Shepherd] Service $name updated on $hostname"
           body="$(date) Service $name was updated from $previous_image to $current_image"
-          curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\"}" "$apprise_sidecar_url"
+          curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\", \"type\": \"success\"}" "$apprise_sidecar_url"
         fi
 
         if [[ "$image_autoclean_limit" != "" ]]; then
