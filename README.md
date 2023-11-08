@@ -52,10 +52,12 @@ It is also possible to put all authentication information in a secret file. This
 * registry: the registry to authenticate against, eg `registry.gitlab.com`
 * login: the user to authenticate as
 * password: the password to authenticate with
-Lines starting with `#` are comments, and are ignored, as are invalid lines.
+
+Lines starting with `#` are comments, and are ignored, as are invalid lines. Make sure this file ends with a new line. Otherwise your last line in the file will be ignored ([here is why](https://stackoverflow.com/a/729795/1752287)).
 Here is an example:
 ```
 blog	registry.gitlab.com	gitlab+deploy-token-5123674	ssw2Nrd2
+
 ```
 Create and edit that file locally, eg at the location `private/shepherd-registries-auth`, and create the docker secret with
 ```
