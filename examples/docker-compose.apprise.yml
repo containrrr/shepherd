@@ -16,7 +16,7 @@ services:
     deploy:
       placement:
         constraints:
-        - node.role == manager
+          - node.role == manager
 
   notify:
     image: mazzolino/apprise-microservice:0.1
