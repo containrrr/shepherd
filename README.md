@@ -117,6 +117,8 @@ Example:
                         --mount type=bind,source=/root/.docker/config.json,target=/root/.docker/config.json,ro \
                         containrrr/shepherd
 
+*Note that the quotes in the command above are evaluated by your shell and are not part of the environment variable value! - See also the note in [docker-compose.yml](docker-compose.yml)!*
+
 ## Running on a cron schedule
 
 When running shepherd as described with a `SLEEP_TIME`, the de facto running times will drift the longer the container is running. If you want to run shepherd on a fixed schedule instead, it is recommended to pair it with [swarm-cronjob](https://github.com/crazy-max/swarm-cronjob):
