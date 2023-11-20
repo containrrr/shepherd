@@ -7,25 +7,29 @@ A Docker swarm service for automatically updating your services whenever their b
 
 ## Usage
 
-    docker service create --name shepherd \
-                          --constraint "node.role==manager" \
-                          --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
-                          containrrr/shepherd
+```shell-script
+docker service create --name shepherd \
+                      --constraint "node.role==manager" \
+                      --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
+                      containrrr/shepherd
+```
 
 ### Or with Docker Compose
 
-    version: "3"
-    services:
-      ...
-      shepherd:
-        build: .
-        image: containrrr/shepherd
-        volumes:
-          - /var/run/docker.sock:/var/run/docker.sock
-        deploy:
-          placement:
-            constraints:
-            - node.role == manager
+```yaml
+version: "3"
+services:
+  ...
+  shepherd:
+    build: .
+    image: containrrr/shepherd
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+```
 
 See the example [docker-compose.yml](docker-compose.yml) and some more compose configs in the [examples](examples) folder.
 
@@ -64,7 +68,7 @@ Create and edit that file locally, eg at the location `private/shepherd-registri
 docker secret create shepherd-registries-auth private/shepherd-registries-auth
 ```
 You need to make the secret available to shepherd with the `secrets` key, and pass the secret file to the `REGISTRIES_FILE` variable:
-```
+```yaml
 services:
   app:
     image: containrrr/shepherd
@@ -78,7 +82,7 @@ secrets:
 ```
 You also need to add a label `shepherd.auth.config` to the container to be updated specifying which line of the secret file should be used. The value of that label should be the `id` in the secret file:
 
-```
+```yaml
     deploy:
         labels:
             - shepherd.enable=true
@@ -99,23 +103,25 @@ If you care about log entries having the right timezone, you can set the `TZ` va
 
 Example:
 
-    docker service create --name shepherd \
-                        --constraint "node.role==manager" \
-                        --env SLEEP_TIME="5m" \
-                        --env IGNORELIST_SERVICES="shepherd my-other-service" \
-                        --env WITH_REGISTRY_AUTH="true" \
-                        --env WITH_INSECURE_REGISTRY="true" \
-                        --env WITH_NO_RESOLVE_IMAGE="true" \
-                        --env FILTER_SERVICES="label=com.mydomain.autodeploy" \
-                        --env APPRISE_SIDECAR_URL="apprise-microservice:5000" \
-                        --env IMAGE_AUTOCLEAN_LIMIT="5" \
-                        --env RUN_ONCE_AND_EXIT="true" \
-                        --env ROLLBACK_ON_FAILURE="true" \
-                        --env UPDATE_OPTIONS="--update-delay=30s" \
-                        --env TZ=Europe/Berlin \
-                        --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
-                        --mount type=bind,source=/root/.docker/config.json,target=/root/.docker/config.json,ro \
-                        containrrr/shepherd
+```shell-script
+docker service create --name shepherd \
+                      --constraint "node.role==manager" \
+                      --env SLEEP_TIME="5m" \
+                      --env IGNORELIST_SERVICES="shepherd my-other-service" \
+                      --env WITH_REGISTRY_AUTH="true" \
+                      --env WITH_INSECURE_REGISTRY="true" \
+                      --env WITH_NO_RESOLVE_IMAGE="true" \
+                      --env FILTER_SERVICES="label=com.mydomain.autodeploy" \
+                      --env APPRISE_SIDECAR_URL="apprise-microservice:5000" \
+                      --env IMAGE_AUTOCLEAN_LIMIT="5" \
+                      --env RUN_ONCE_AND_EXIT="true" \
+                      --env ROLLBACK_ON_FAILURE="true" \
+                      --env UPDATE_OPTIONS="--update-delay=30s" \
+                      --env TZ=Europe/Berlin \
+                      --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,ro \
+                      --mount type=bind,source=/root/.docker/config.json,target=/root/.docker/config.json,ro \
+                      containrrr/shepherd
+```
 
 *Note that the quotes in the command above are evaluated by your shell and are not part of the environment variable value! - See also the note in [docker-compose.yml](docker-compose.yml)!*
 

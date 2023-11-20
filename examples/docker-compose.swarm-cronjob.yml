@@ -21,7 +21,7 @@ services:
         - swarm.cronjob.skip-running=true
       placement:
         constraints:
-        - node.role == manager
+          - node.role == manager
 
   scheduler:
     image: crazymax/swarm-cronjob:latest
