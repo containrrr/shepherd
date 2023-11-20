@@ -2,7 +2,7 @@ version: "3"
 
 services:
   app:
-    image: mazzolino/shepherd
+    image: containrrr/shepherd
     environment:
       TZ: 'US/Eastern'
       FILTER_SERVICES: ''
