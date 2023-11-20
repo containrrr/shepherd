@@ -1,0 +1,40 @@
+version: "3"
+
+services:
+  shepherd:
+    image: containrrr/shepherd
+    environment:
+      # Beware YAML gotchas regarding quoting:
+      # With KEY: 'VALUE', quotes are part of yaml syntax and thus get stripped
+      # but with KEY='VALUE', they are part of the value and stay there,
+      # causing problems!
+      SLEEP_TIME: "1d"
+      TZ: "US/Eastern"
+      VERBOSE: "true"
+      IGNORELIST_SERVICES: "label=shepherd.autodeploy=false"
+      FILTER_SERVICES: "label=shepherd.autodeploy=true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+
+  # Explicitly enable shepherd for this service
+  updating-app:
+    image: hello-world
+    deploy:
+      labels:
+        - shepherd.autodeploy=true
+
+  # Explicitly disable shepherd for this service
+  not-updating-app:
+    image: hello-world
+    deploy:
+      labels:
+        - shepherd.autodeploy=false
+
+  # Implicitly disable shepherd for this service
+  # because of FILTER_SERVICES above
+  another-not-updating-app:
+    image: hello-world
