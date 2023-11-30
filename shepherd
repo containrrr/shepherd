@@ -113,7 +113,7 @@ update_services() {
         if [[ "${ROLLBACK_ON_FAILURE+x}" ]]; then
           logger "Rolling $name back"
           # shellcheck disable=SC2086
-          docker "${config_flag[@]}" service update "$name" $detach_option $registry_auth $no_resolve_image_flag ${ROLLBACK_OPTIONS} --rollback > /dev/null
+          docker "${config_flag[@]}" service update "$name" $detach_option ${ROLLBACK_OPTIONS} --rollback > /dev/null
         fi
         if [[ "$apprise_sidecar_url" != "" ]]; then
           title="[Shepherd] Service $name update failed on $hostname"
