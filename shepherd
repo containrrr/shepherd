@@ -156,6 +156,11 @@ update_services() {
       fi
     fi
   done
+  if [[ "$apprise_sidecar_url" != "" ]]; then
+    title="[Shepherd] Shepherd run completed on $hostname"
+    body="$(date) Shepherd run has been completed"
+    curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\", \"type\": \"info\"}" "$apprise_sidecar_url"
+  fi
 }
 
 # retrieve registry password from docker secrets or environment, in this order
