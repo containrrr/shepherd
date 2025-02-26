@@ -23,6 +23,7 @@ services:
       LOG_LEVEL: info
       POST: 1         # Enable methods that allow changes
       ## Variables match the URL prefix (i.e. AUTH: 1 allow access to /auth/* parts of the API, etc.).
+      # AUTH: 1       # Enable this if you're using registry authentication
       SERVICES: 1
       DISTRIBUTION: 1
       TASKS: 1
