@@ -24,10 +24,12 @@ services:
       POST: 1         # Enable methods that allow changes
       ## Variables match the URL prefix (i.e. AUTH: 1 allow access to /auth/* parts of the API, etc.).
       # AUTH: 1       # Enable this if you're using registry authentication
-      SERVICES: 1
+      CONTAINERS: 1
       DISTRIBUTION: 1
-      TASKS: 1
+      IMAGES: 1
       NODES: 1
+      SERVICES: 1
+      TASKS: 1
 
 networks:
   socket_proxy:
