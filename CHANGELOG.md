@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.8.1](https://github.com/containrrr/shepherd/tree/1.8.1) (2025-11-11)
+
+[Full Changelog](https://github.com/containrrr/shepherd/compare/1.8.0...1.8.1)
+
+**Implemented enhancements:**
+
+- Switch to official docker image v28 ([moschlar](https://github.com/moschlar))
+
+**Fixed bugs:**
+
+- Error response from daemon: client version 1.43 is too old. [\#135](https://github.com/containrrr/shepherd/issues/135)
+
 ## [1.8.0](https://github.com/containrrr/shepherd/tree/1.8.0) (2023-10-30)
 
 [Full Changelog](https://github.com/containrrr/shepherd/compare/0.7.0...1.8.0)
