@@ -1,0 +1,35 @@
+services:
+  service:
+    image: containrrr/shepherd
+    environment:
+      DOCKER_HOST: tcp://tasks.socket-proxy:2375
+    networks:
+      - socket_proxy
+    deploy:
+      replicas: 1
+      
+  socket-proxy:
+    image: tecnativa/docker-socket-proxy
+    networks:
+      - socket_proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role==manager
+    environment:
+      LOG_LEVEL: info
+      POST: 1         # Enable methods that allow changes
+      ## Variables match the URL prefix (i.e. AUTH: 1 allow access to /auth/* parts of the API, etc.).
+      # AUTH: 1       # Enable this if you're using registry authentication
+      CONTAINERS: 1
+      DISTRIBUTION: 1
+      IMAGES: 1
+      NODES: 1
+      SERVICES: 1
+      TASKS: 1
+
+networks:
+  socket_proxy:
