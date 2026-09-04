@@ -70,6 +70,7 @@ update_services() {
   local no_resolve_image_flag=""
   local name
   local apprise_sidecar_url="${APPRISE_SIDECAR_URL:-}"
+  local notify_level="${NOTIFY_LEVEL:-UPDATE}"
   local hostname
   hostname="${HOSTNAME:-$(hostname)}"
 
@@ -135,6 +136,12 @@ update_services() {
       current_image=$(docker service inspect "$name" -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}')
       if [ "$previous_image" == "$current_image" ]; then
         logger "No updates to service $name!" "true"
+
+        if [[ "$notify_level" == "ALL" ]]; then
+          title="[Shepherd] Service $name up to date on $hostname"
+          body="$(date) Service $name checked, no update available"
+          send_notification "$title" "$body" "success"
+        fi
       else
         logger "Service $name was updated!"
 

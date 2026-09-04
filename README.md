@@ -95,6 +95,8 @@ You can prevent pulling images from the registry by setting the `WITH_NO_RESOLVE
 
 You can enable notifications on service update with apprise, using the [apprise microservice](https://github.com/djmaze/apprise-microservice) and the `APPRISE_SIDECAR_URL` variable. See the file [docker-compose.apprise.yml](examples/docker-compose.apprise.yml) for an example.
 
+By default notifications are only sent when a service update succeeds or fails. Set `NOTIFY_LEVEL` to `ALL` to also send a notification when a service is checked but does not need an update (the default is `UPDATE`, i.e. the current behavior).
+
 You can enable old image autocleaning on service update by setting the `IMAGE_AUTOCLEAN_LIMIT` variable.
 
 You can enable one shot running with `RUN_ONCE_AND_EXIT` variable.
@@ -113,6 +115,7 @@ docker service create --name shepherd \
                       --env WITH_NO_RESOLVE_IMAGE="true" \
                       --env FILTER_SERVICES="label=com.mydomain.autodeploy" \
                       --env APPRISE_SIDECAR_URL="apprise-microservice:5000" \
+                      --env NOTIFY_LEVEL="ALL" \
                       --env IMAGE_AUTOCLEAN_LIMIT="5" \
                       --env RUN_ONCE_AND_EXIT="true" \
                       --env ROLLBACK_ON_FAILURE="true" \
