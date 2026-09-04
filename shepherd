@@ -49,8 +49,11 @@ authenticate_to_registries() {
 
 send_notification() {
   if [[ "$apprise_sidecar_url" != "" ]]; then
-    status=$(curl --no-progress-meter -X POST -H "Content-Type: application/json" --data "{\"title\": \"$1\", \"body\": \"$2\", \"notify_type\": \"$3\"}" "$apprise_sidecar_url")
-    logger "Sending notification: $status"
+    if status=$(curl --no-progress-meter -X POST -H "Content-Type: application/json" --data "{\"title\": \"$1\", \"body\": \"$2\", \"notify_type\": \"$3\"}" "$apprise_sidecar_url"); then
+      logger "Sending notification: $status"
+    else
+      logger "Failed to send notification to $apprise_sidecar_url"
+    fi
   fi
 }
 
