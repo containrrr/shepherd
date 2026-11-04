@@ -107,6 +107,27 @@ update_services() {
       send_notification "$title" "$body" "failure"
 
     else
+      # Resolve once before changing the service. Docker may otherwise accept an
+      # unresolved tag after a registry failure and replace healthy tasks.
+      # Keep the explicit no-resolve and insecure-registry modes unchanged.
+      if [[ "$supports_no_resolve_image" != true && "$supports_insecure_registry" != true ]]; then
+        local manifest digest
+        if ! manifest=$(docker "${config_flag[@]}" buildx imagetools inspect "$image"); then
+          logger "Error updating service $name! Could not resolve image $image; leaving the service unchanged"
+          continue
+        fi
+        digest=$(awk '$1 == "Digest:" { print $2; exit }' <<< "$manifest")
+        if [[ ! "$digest" =~ ^sha256:[a-f0-9]{64}$ ]]; then
+          logger "Error updating service $name! Invalid digest for image $image; leaving the service unchanged"
+          continue
+        fi
+        image="${image}@${digest}"
+        if [[ "$image" == "$image_with_digest" && -z "${UPDATE_OPTIONS:-}" ]]; then
+          logger "No updates to service $name!" "true"
+          continue
+        fi
+      fi
+
       logger "Trying to update service $name with image $image" "true"
 
       num_tasks=$(docker service ls -f "name=$name" | awk 'NR==2{print $4}')
